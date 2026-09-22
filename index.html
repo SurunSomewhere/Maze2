@@ -863,7 +863,13 @@ const stages = [
   {id:10,title:"Jembatan Terakhir",sub:"Tantangan terpadu • Temukan jalan keluar",icon:"🌉",difficulty:"★★★★★",type:"final"}
 ];
 
-let unlocked = Math.max(1, Math.min(10, Number(localStorage.getItem("socialMazeAdventureUnlockedV18")) || 1));
+const SOCIAL_MAZE_VERSION = "V19";
+if (localStorage.getItem("socialMazeAdventureVersion") !== SOCIAL_MAZE_VERSION) {
+  localStorage.removeItem("socialMazeAdventureUnlockedV19");
+  localStorage.setItem("socialMazeAdventureVersion", SOCIAL_MAZE_VERSION);
+  localStorage.setItem("socialMazeAdventureUnlockedV19", "1");
+}
+let unlocked = 1;
 
 let gerbang1Index = 0;
 let dragChoiceIndex = 0;
@@ -898,7 +904,7 @@ function showSelection(){
  startAdventureMusic();
  $("landing").classList.add("hidden");$("finish").classList.add("hidden");$("game").classList.add("hidden");$("selection").classList.remove("hidden");renderMap("bigMap");
 }
-function renderMap(id){ unlocked=Math.max(1,Math.min(10,Number(localStorage.getItem("socialMazeAdventureUnlockedV18"))||1));
+function renderMap(id){ unlocked=Math.max(1,Math.min(10,Number(localStorage.getItem("socialMazeAdventureUnlockedV19"))||1));
  const el=$(id);
  el.innerHTML=`<div class="map-image-board">
    <div class="map-canvas">
@@ -1082,19 +1088,19 @@ function showStoryIntro(index){
  if(index===3)setTimeout(()=>{if(current===3&&$("challenge").querySelector(".story-screen-v9"))playFoxCry()},450);
 }
 function resetSocialMazeV14Progress(){
- localStorage.removeItem("socialMazeAdventureUnlockedV18");
- localStorage.removeItem("socialMazeAdventureUnlockedV18");
- localStorage.removeItem("socialMazeAdventureUnlockedV18");
+ localStorage.removeItem("socialMazeAdventureUnlockedV19");
+ localStorage.removeItem("socialMazeAdventureUnlockedV19");
+ localStorage.removeItem("socialMazeAdventureUnlockedV19");
  unlocked=1;
- localStorage.setItem("socialMazeAdventureUnlockedV18","1");
+ localStorage.setItem("socialMazeAdventureUnlockedV19","1");
  showSelection();
  toast("🔄 Progress direset. Hanya Tantangan 1 yang terbuka.");
 }
 function enterStoryChallenge(){if(current===9)startTenseMusic();else startAdventureMusic();renderStage()}
 
 function startStage(i){
- unlocked=Math.max(1,Math.min(10,Number(localStorage.getItem("socialMazeAdventureUnlockedV18"))||1));
- unlocked=Math.max(1,Math.min(10,Number(localStorage.getItem("socialMazeAdventureUnlockedV18"))||1));
+ unlocked=Math.max(1,Math.min(10,Number(localStorage.getItem("socialMazeAdventureUnlockedV19"))||1));
+ unlocked=Math.max(1,Math.min(10,Number(localStorage.getItem("socialMazeAdventureUnlockedV19"))||1));
  if(i<0 || i>9)return;
  if(i+1>unlocked){toast("🔒 Tantangan ini belum terbuka.");return}
  if(i===0) gerbang1Index=0;
@@ -1158,7 +1164,7 @@ function finishStage(){
  const next=current+1;
  if(next+1>unlocked){
    unlocked=Math.min(10,next+1);
-   localStorage.setItem("socialMazeAdventureUnlockedV18",String(unlocked));
+   localStorage.setItem("socialMazeAdventureUnlockedV19",String(unlocked));
  }
  setTimeout(()=>{showSelection();toast(`🗺️ Tantangan ${next+1} sudah terbuka. Klik nomornya di peta!`)},350);
 }
@@ -1748,7 +1754,7 @@ function copyReflection(){
  const text=`LEMBAR REFLEKSI SOCIAL MAZE\nPemain: ${player.name}\nKelas: ${player.cls}\n\n1. Dampak sosial: ${$("ref1").value||"-"}\n2. Hubungan sebab-akibat: ${$("ref2").value||"-"}\n3. Tindakan/solusi: ${$("ref3").value||"-"}`;
  navigator.clipboard?.writeText(text).then(()=>toast("📋 Refleksi berhasil disalin!")).catch(()=>alert(text));
 }
-function restartAll(){stopAllGameMusic();localStorage.removeItem("socialMazeAdventureUnlockedV18");localStorage.removeItem("socialMazeAdventureUnlockedV18_OLD");localStorage.removeItem("socialMazeAdventureUnlocked");localStorage.removeItem("socialMazeAdventureUnlockedV18");unlocked=1;lives=3;flowers=0;apples=0;current=0;$("finish").classList.add("hidden");$("landing").classList.remove("hidden");}
+function restartAll(){stopAllGameMusic();localStorage.removeItem("socialMazeAdventureUnlockedV19");localStorage.removeItem("socialMazeAdventureUnlockedV19_OLD");localStorage.removeItem("socialMazeAdventureUnlocked");localStorage.removeItem("socialMazeAdventureUnlockedV19");unlocked=1;lives=3;flowers=0;apples=0;current=0;$("finish").classList.add("hidden");$("landing").classList.remove("hidden");}
 </script>
 </body>
 </html>
