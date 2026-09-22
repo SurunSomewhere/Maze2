@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Social Maze — Find The Way Out</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fredoka:wght@400;500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#243047;--paper:#fffaf0;--paper2:#f6ecd7;--cream:#f8f1df;
+  --yellow:#ffd85a;--orange:#f6a65b;--pink:#ffb7c9;--blue:#9fd8ef;
+  --green:#a9dca5;--purple:#c9b7ef;--red:#ef8f8f;--white:#fff;
+  --shadow:5px 5px 0 var(--ink);--soft:0 12px 35px rgba(36,48,71,.12);
+}
+*{box-sizing:border-box}
+body{margin:0;background:
+ radial-gradient(circle at 10% 10%,rgba(255,216,90,.25) 0 3px,transparent 4px),
+ radial-gradient(circle at 80% 25%,rgba(255,183,201,.3) 0 4px,transparent 5px),
+ var(--cream);color:var(--ink);font-family:Nunito,sans-serif;min-height:100vh}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.wrap{max-width:1180px;margin:auto;padding:18px}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(255,250,240,.94);backdrop-filter:blur(10px);border-bottom:3px solid var(--ink)}
+.topbar-inner{max-width:1180px;margin:auto;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font:700 27px Fredoka;color:var(--ink)} .logo span{color:#e68b3e}
+.player-pill{background:var(--white);border:3px solid var(--ink);border-radius:999px;padding:7px 12px;font-weight:900;box-shadow:3px 3px 0 var(--ink)}
+.hero{padding:55px 18px 30px;display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:center}
+.kicker{display:inline-block;background:var(--ink);color:white;border:3px solid var(--ink);border-radius:999px;padding:8px 14px;font-weight:900;letter-spacing:.05em}
+h1,h2,h3{font-family:Fredoka;margin:0 0 12px;line-height:1.05}
+.hero h1{font-size:clamp(48px,8vw,92px);letter-spacing:-.04em}
+.hero h1 span{color:#e68b3e}.subtitle{font:700 28px Caveat;color:#d56f35}
+.quote{background:#fff4c9;border:3px solid var(--ink);border-radius:22px;padding:17px;box-shadow:var(--shadow);font-weight:800;line-height:1.5}
+.map-preview{background:#e8d2a8;border:4px solid var(--ink);border-radius:28px;padding:18px;box-shadow:var(--shadow);transform:rotate(1deg);position:relative;overflow:hidden}
+.map-preview:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 23px,rgba(80,55,20,.06) 24px),repeating-linear-gradient(90deg,transparent 0 23px,rgba(80,55,20,.04) 24px);pointer-events:none}
+.preview-path{height:280px;position:relative}
+.preview-path svg{width:100%;height:100%}.compass{position:absolute;right:12px;top:8px;font-size:45px}
+.btn{border:3px solid var(--ink);border-radius:16px;padding:12px 18px;font-weight:900;box-shadow:4px 4px 0 var(--ink);transition:.15s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+.btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+.btn-primary{background:var(--yellow)}.btn-blue{background:var(--blue)}.btn-pink{background:var(--pink)}.btn-green{background:var(--green)}.btn-white{background:white}.btn-danger{background:var(--red)}
+.section-card{background:rgba(255,255,255,.82);border:3px solid var(--ink);border-radius:26px;padding:24px;box-shadow:var(--soft);margin:22px 0}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.feature{padding:18px;border:3px solid var(--ink);border-radius:20px;background:white}.feature:nth-child(2){background:#fff4c9}.feature:nth-child(3){background:#e9f8ff}
+.feature b{display:block;font:700 21px Fredoka;margin-bottom:5px}
+.modal-back{position:fixed;inset:0;background:rgba(36,48,71,.58);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{width:min(700px,100%);max-height:92vh;overflow:auto;background:var(--paper);border:4px solid var(--ink);border-radius:28px;box-shadow:10px 10px 0 rgba(0,0,0,.2);padding:25px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}.field label{font-weight:900}
+.field input,.field select,.field textarea{border:3px solid var(--ink);border-radius:14px;padding:11px;background:white;outline:none}.field textarea{min-height:80px;resize:vertical}
+.avatar-builder{display:grid;grid-template-columns:210px 1fr;gap:18px;align-items:center;margin-top:14px}
+.avatar-preview{height:235px;background:#dff3fa;border:3px solid var(--ink);border-radius:24px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.avatar{position:relative;width:110px;height:170px}.avatar .head{width:78px;height:78px;background:#f3c7a7;border:4px solid var(--ink);border-radius:50%;position:absolute;left:16px;top:18px;z-index:3}.avatar .hair{position:absolute;left:10px;top:5px;width:90px;height:62px;background:#3c3548;border:4px solid var(--ink);border-radius:52% 48% 42% 35%;z-index:4}.avatar .eye{position:absolute;top:50px;width:7px;height:10px;background:var(--ink);border-radius:50%;z-index:5}.avatar .e1{left:37px}.avatar .e2{left:62px}.avatar .body{position:absolute;left:17px;top:91px;width:76px;height:70px;border:4px solid var(--ink);border-radius:22px 22px 12px 12px;background:var(--blue);z-index:2}.avatar .leg{position:absolute;top:150px;width:24px;height:25px;background:#3e4a5e;border:4px solid var(--ink);z-index:1}.avatar .l1{left:29px}.avatar .l2{left:59px}.options{display:grid;gap:10px}.option-row{display:flex;flex-wrap:wrap;gap:7px}.choice-chip{border:3px solid var(--ink);background:white;border-radius:999px;padding:8px 12px;font-weight:900}.choice-chip.active{background:var(--yellow);box-shadow:3px 3px 0 var(--ink)}
+.game-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.stats{display:flex;gap:8px;flex-wrap:wrap}.stat{background:white;border:3px solid var(--ink);border-radius:999px;padding:8px 12px;font-weight:900}.map-shell{background:#e7d0a4;border:4px solid var(--ink);border-radius:28px;padding:16px;box-shadow:var(--shadow);overflow:hidden}
+.adventure-map{position:relative;min-height:520px;border-radius:20px;background:
+ radial-gradient(circle at 18% 20%,#94c77d 0 24px,transparent 25px),
+ radial-gradient(circle at 80% 72%,#94c77d 0 30px,transparent 31px),
+ radial-gradient(circle at 70% 18%,#b7d6e6 0 34px,transparent 35px),
+ #e8d5ad;overflow:hidden;border:2px dashed #826d4c}
+.map-lines{position:absolute;inset:0;width:100%;height:100%}
+.map-node{position:absolute;width:88px;text-align:center;transform:translate(-50%,-50%);z-index:3}.node-dot{width:55px;height:55px;margin:auto;border:4px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;background:white;font-size:26px;box-shadow:4px 4px 0 var(--ink)}.map-node span{display:block;background:rgba(255,250,240,.9);border:2px solid var(--ink);border-radius:9px;padding:3px 5px;font-size:11px;font-weight:900;margin-top:6px}.map-node.done .node-dot{background:var(--green)}.map-node.current .node-dot{background:var(--yellow);animation:pulse 1s infinite}.map-node.lock .node-dot{background:#ddd}.player-marker{position:absolute;z-index:10;transform:translate(-50%,-100%);font-size:39px;filter:drop-shadow(2px 3px 0 var(--ink));transition:all .6s cubic-bezier(.2,.9,.3,1)}
+@keyframes pulse{50%{transform:scale(1.08)}}.map-deco{position:absolute;font-size:32px;opacity:.75}.d1{left:8%;top:15%}.d2{right:9%;top:38%}.d3{left:34%;bottom:7%}.d4{right:30%;bottom:10%}
+.challenge{background:white;border:3px solid var(--ink);border-radius:24px;padding:22px;margin-top:18px;box-shadow:var(--soft)}.challenge-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.stage-tag{background:var(--ink);color:white;border-radius:999px;padding:7px 11px;font-weight:900;font-size:12px}
+.question{font:700 26px Fredoka;margin:15px 0}.choices{display:grid;gap:10px}.answer{background:#fff;border:3px solid var(--ink);border-radius:15px;padding:13px;text-align:left;font-weight:900}.answer:hover{background:#fff4c9}.answer.correct{background:#c8efc1}.answer.wrong{background:#ffc7c7}
+.feedback{margin-top:13px;border:3px dashed var(--ink);border-radius:15px;padding:12px;font-weight:900;background:#fff8d9}
+.lives{letter-spacing:3px}.flower-count{background:#ffd9e5}.timer{background:#d8efff}.timer.danger{background:#ffb2b2}
+.apple-area{height:310px;background:linear-gradient(#bde6f2 0 52%,#9bcf83 52%);border:3px solid var(--ink);border-radius:20px;position:relative;overflow:hidden}.tree{position:absolute;left:50%;bottom:15px;transform:translateX(-50%);font-size:170px}.apple{position:absolute;font-size:36px;border:0;background:transparent;filter:drop-shadow(2px 2px 0 var(--ink));animation:sway 1.7s ease-in-out infinite}.apple:hover{transform:scale(1.2)}@keyframes sway{50%{margin-top:5px}}
+.cross-grid{display:grid;grid-template-columns:repeat(10,1fr);max-width:480px;margin:15px auto;gap:2px}.cross-cell{aspect-ratio:1;border:2px solid var(--ink);background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px}.cross-cell.black{background:var(--ink)}.cross-clues{display:grid;grid-template-columns:1fr 1fr;gap:8px}.clue{background:#fff4c9;border:2px solid var(--ink);border-radius:12px;padding:9px;font-weight:800;font-size:13px}
+.word-grid{display:grid;grid-template-columns:repeat(10,1fr);max-width:520px;margin:15px auto;gap:3px}.word-cell{aspect-ratio:1;border:2px solid var(--ink);background:white;border-radius:5px;font-weight:900;display:flex;align-items:center;justify-content:center}.word-cell.sel{background:var(--yellow)}.word-cell.found{background:var(--green)}
+.snake-board{display:grid;grid-template-columns:repeat(6,1fr);max-width:600px;margin:auto;border:3px solid var(--ink)}.sq{aspect-ratio:1;border:1px solid var(--ink);background:#fff7dc;display:flex;align-items:center;justify-content:center;font-weight:900;position:relative}.sq:nth-child(2n){background:#eaf6ff}.pawn{position:absolute;font-size:24px;right:2px;bottom:1px}.robot{font-size:30px}
+.battle{display:grid;grid-template-columns:1fr 1fr;gap:15px}.fighter{padding:18px;border:3px solid var(--ink);border-radius:20px;text-align:center;background:#f7efff}.hp{height:17px;background:#ddd;border:2px solid var(--ink);border-radius:99px;overflow:hidden}.hp i{display:block;height:100%;background:#74c77a;width:100%;transition:.3s}
+.event-card{background:#fff4d2;border:3px dashed var(--ink);border-radius:20px;padding:20px;text-align:center}.npc{font-size:76px}.event-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.memory-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:600px;margin:auto}.memory-card{aspect-ratio:1;border:3px solid var(--ink);border-radius:15px;background:var(--blue);font-size:30px}.memory-card.open{background:white}
+.finish{background:#fff;position:relative}.reflection{display:grid;gap:10px}.reflection textarea{border:3px solid var(--ink);border-radius:14px;padding:12px;min-height:90px}
+.toast{position:fixed;bottom:20px;right:20px;z-index:200;background:var(--ink);color:white;border:3px solid white;border-radius:15px;padding:13px 16px;font-weight:900;box-shadow:5px 5px 0 rgba(0,0,0,.2);transform:translateY(130px);transition:.3s}.toast.show{transform:translateY(0)}
+footer{text-align:center;padding:30px 15px;font-size:12px;font-weight:800;color:#687389}
+@media(max-width:850px){.hero{grid-template-columns:1fr}.feature-grid{grid-template-columns:1fr}.avatar-builder{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.adventure-map{min-height:460px}.cross-clues{grid-template-columns:1fr}.battle{grid-template-columns:1fr}}
+@media(max-width:560px){.wrap{padding:10px}.hero{padding-top:30px}.hero h1{font-size:52px}.map-shell{padding:8px}.adventure-map{min-height:410px}.map-node{width:68px}.node-dot{width:45px;height:45px;font-size:20px}.map-node span{font-size:9px}.player-marker{font-size:30px}.challenge{padding:15px}.question{font-size:21px}.memory-grid{grid-template-columns:repeat(4,1fr);gap:6px}}
+
+/* New Social Maze challenge styles */
+.drag-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
+.drag-card,.sequence-card{background:#fffdf7;border:3px solid #1e293b;border-radius:18px;padding:15px;font-weight:800;cursor:pointer;box-shadow:4px 4px 0 #1e293b;transition:.15s}
+.drag-card:hover,.sequence-card:hover{transform:translate(-2px,-2px)}
+.drag-card:active,.sequence-card:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #1e293b}
+.drop-zone{min-height:110px;border:3px dashed #1e293b;border-radius:22px;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;background:#fef3c7;font-weight:900;margin-top:14px;padding:15px}
+.drop-zone.over{background:#dcfce7;transform:scale(1.01)}
+.drop-zone small{font-weight:600;opacity:.7}
+.sequence-pool{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
+.sequence-card{width:100%;text-align:left}
+.sequence-card:disabled{opacity:.35;cursor:not-allowed;box-shadow:none;transform:none}
+.sequence-path{min-height:90px;border:3px solid #1e293b;border-radius:22px;background:#eff6ff;padding:14px;margin:14px 0}
+.path-label{font-weight:900;text-align:center;margin-bottom:8px}
+.sequence-picked{background:#fff;border:2px solid #1e293b;border-radius:13px;padding:9px 12px;margin:7px 0;font-weight:800}
+@media(max-width:650px){
+  .drag-options,.sequence-pool{grid-template-columns:1fr}
+}
+
+.option-btn.correct{background:#dcfce7!important;border-color:#15803d!important;transform:translateY(-2px)}
+.option-btn.wrong{background:#fee2e2!important;border-color:#dc2626!important}
+
+/* ===== GERBANG AWAL POLISH ===== */
+.gerbang-card{
+  max-width:900px;
+  margin:0 auto;
+  background:linear-gradient(145deg,#fffdf7,#fff8df);
+  border:3px solid #1e293b;
+  border-radius:28px;
+  padding:28px;
+  box-shadow:8px 8px 0 #1e293b;
+}
+.gerbang-progress{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  margin-bottom:22px;
+}
+.gerbang-counter{
+  margin-top:8px;
+  font-weight:900;
+  color:#475569;
+  font-size:14px;
+}
+.gerbang-dots{
+  display:flex;
+  gap:7px;
+}
+.gerbang-dots span{
+  width:28px;
+  height:8px;
+  border-radius:999px;
+  background:#e2e8f0;
+  border:2px solid #1e293b;
+}
+.gerbang-dots span.active{background:#fde047}
+.gerbang-dots span.done{background:#86efac}
+.gerbang-question-label{
+  display:inline-block;
+  margin:8px 0 12px;
+  padding:7px 12px;
+  border-radius:999px;
+  background:#fef08a;
+  border:2px solid #1e293b;
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:.5px;
+}
+.gerbang-question{
+  font-size:clamp(24px,3vw,34px)!important;
+  line-height:1.2!important;
+  margin:8px 0 24px!important;
+  color:#1e293b;
+}
+.gerbang-options{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.gerbang-option{
+  width:100%;
+  min-height:76px;
+  display:flex!important;
+  align-items:center;
+  gap:14px;
+  text-align:left!important;
+  padding:14px 17px!important;
+  border:3px solid #1e293b!important;
+  border-radius:18px!important;
+  background:#fff!important;
+  color:#1e293b!important;
+  font-size:16px!important;
+  font-weight:800!important;
+  cursor:pointer;
+  box-shadow:4px 4px 0 #1e293b;
+  transition:transform .12s,box-shadow .12s,background .12s;
+}
+.gerbang-option:hover:not(:disabled){
+  transform:translate(-2px,-2px);
+  background:#fffbea!important;
+  box-shadow:6px 6px 0 #1e293b;
+}
+.gerbang-option:active:not(:disabled){
+  transform:translate(2px,2px);
+  box-shadow:2px 2px 0 #1e293b;
+}
+.gerbang-option:disabled{cursor:default;opacity:1}
+.answer-letter{
+  flex:0 0 38px;
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  background:#e0f2fe;
+  border:2px solid #1e293b;
+  font-weight:1000;
+}
+.gerbang-option.correct{
+  background:#dcfce7!important;
+  border-color:#166534!important;
+  box-shadow:4px 4px 0 #166534!important;
+}
+.gerbang-option.correct .answer-letter{background:#86efac}
+.gerbang-option.wrong{
+  background:#fee2e2!important;
+  border-color:#b91c1c!important;
+  box-shadow:4px 4px 0 #b91c1c!important;
+}
+.gerbang-option.wrong .answer-letter{background:#fca5a5}
+.correct-feedback{
+  background:#dcfce7!important;
+  border-color:#166534!important;
+}
+.gerbang-retry{margin-top:10px}
+@media(max-width:700px){
+  .gerbang-card{padding:19px;border-radius:22px;box-shadow:5px 5px 0 #1e293b}
+  .gerbang-progress{align-items:flex-start;flex-direction:column}
+  .gerbang-dots{width:100%}
+  .gerbang-dots span{flex:1}
+  .gerbang-options{grid-template-columns:1fr}
+  .gerbang-option{min-height:68px}
+}
+
+/* ===== AREA 2 INTERACTION FIX ===== */
+.area2-card{max-width:920px;margin:0 auto}
+.area2-situation{
+  background:#f0fdf4;
+  border:3px solid #1e293b;
+  border-radius:22px;
+  padding:20px;
+  margin:16px 0;
+}
+.area2-label{
+  display:inline-block;
+  background:#bbf7d0;
+  border:2px solid #1e293b;
+  border-radius:999px;
+  padding:6px 11px;
+  font-size:12px;
+  font-weight:1000;
+}
+.area2-situation h2{margin:12px 0 0!important;font-size:clamp(22px,3vw,30px)!important;line-height:1.25!important}
+.area2-instruction{text-align:center;margin:15px auto!important}
+.drag-options{display:grid!important;grid-template-columns:1fr 1fr!important;gap:14px!important}
+.drag-card{
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:12px!important;
+  width:100%!important;
+  min-height:82px!important;
+  margin:0!important;
+  padding:14px!important;
+  border:3px solid #1e293b!important;
+  border-radius:18px!important;
+  background:#fff!important;
+  color:#1e293b!important;
+  font:inherit!important;
+  font-weight:800!important;
+  text-align:left!important;
+  cursor:grab!important;
+  touch-action:none;
+  pointer-events:auto!important;
+  user-select:none;
+  -webkit-user-select:none;
+  box-shadow:4px 4px 0 #1e293b!important;
+  transition:.12s!important;
+}
+.drag-card:hover:not(:disabled){transform:translate(-2px,-2px)!important;background:#fffbea!important}
+.drag-card:active{cursor:grabbing!important}
+.drag-card:disabled{opacity:.7!important;cursor:default!important}
+.drag-card.correct{background:#dcfce7!important;border-color:#166534!important;box-shadow:4px 4px 0 #166534!important}
+.drag-card.wrong{background:#fee2e2!important;border-color:#b91c1c!important;box-shadow:4px 4px 0 #b91c1c!important}
+.drag-number{
+  flex:0 0 36px;
+  width:36px;height:36px;
+  display:grid;place-items:center;
+  border:2px solid #1e293b;
+  border-radius:11px;
+  background:#dbeafe;
+  font-weight:1000;
+}
+.drop-zone{
+  position:relative!important;
+  z-index:5!important;
+  pointer-events:auto!important;
+  min-height:125px!important;
+  margin-top:18px!important;
+  border:3px dashed #1e293b!important;
+  border-radius:22px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  flex-direction:column!important;
+  text-align:center!important;
+  background:#fef3c7!important;
+  padding:15px!important;
+}
+.drop-zone.over{background:#dcfce7!important;transform:scale(1.01)}
+.drop-icon{font-size:30px;line-height:1;margin-bottom:5px}
+.drop-zone small{display:block;font-weight:700;opacity:.7;margin-top:4px}
+.area2-retry{margin-top:10px}
+@media(max-width:700px){
+  .drag-options{grid-template-columns:1fr!important}
+  .drag-card{min-height:72px!important}
+}
+.timer.active{background:#fff1f2!important;border-color:#dc2626!important}
+.challenge .feedback{margin-top:12px}
+
+/* Social Maze V4 mini-games */
+.bottle-field{position:relative;min-height:430px;background:linear-gradient(#dff4ff,#f5f0cf);border:3px solid #18212f;border-radius:24px;overflow:hidden;padding:20px}
+.bottle{position:absolute;width:44px;height:74px;border:0;background:transparent;cursor:pointer;transition:.2s;filter:drop-shadow(2px 3px 0 rgba(0,0,0,.18));font-size:42px}
+.bottle:hover{transform:translateY(-5px) scale(1.08)} .bottle.knocked{transform:rotate(82deg) translateY(18px);opacity:.25;pointer-events:none}
+.ball{position:absolute;font-size:34px;pointer-events:none;animation:throwBall .35s ease-out forwards;z-index:5}
+@keyframes throwBall{from{transform:scale(.6) translate(0,0);opacity:1}to{transform:scale(1.2) translate(12px,-22px);opacity:0}}
+.snake-board-v4{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;background:#d8c28a;padding:10px;border:3px solid #18212f;border-radius:18px}
+.snake-cell-v4{min-height:58px;background:#fffdf3;border:2px solid #18212f;border-radius:10px;padding:5px;position:relative;font-weight:900;text-align:center;font-size:12px}
+.snake-cell-v4 .pawn-v4{display:inline-block;font-size:22px;margin:1px}.snake-cell-v4.special-bomb{background:#ffe0e0}.snake-cell-v4.special-life{background:#e3f8df}.snake-cell-v4.special-flower{background:#fff0fb}
+.snake-q{margin-top:16px;padding:16px;background:#f8fafc;border:2px solid #18212f;border-radius:18px}.snake-q .answer{margin-top:8px}
+.apple-tree-area{position:relative;min-height:420px;background:linear-gradient(#dff3ff 0 55%,#b8df9b 55%);border:3px solid #18212f;border-radius:24px;overflow:hidden}
+.apple-tree{font-size:180px;text-align:center;padding-top:35px;line-height:1}.tree-apple{position:absolute;border:0;background:none;font-size:34px;cursor:pointer;transition:.18s}.tree-apple:hover{transform:scale(1.18)}
+.bouquet-box{position:relative;overflow:hidden;text-align:center;background:linear-gradient(145deg,#fff8d9,#f7eaff);border:3px solid #18212f;border-radius:28px;padding:32px;min-height:360px}
+.bouquet{font-size:74px;letter-spacing:-8px;line-height:1.2;max-width:620px;margin:20px auto}.win-text{font:900 56px Fredoka;color:#e34b63;letter-spacing:2px;text-shadow:3px 3px 0 #18212f}
+.confetti-piece{position:absolute;top:-20px;width:10px;height:18px;animation:confettiFall 3.2s linear forwards;opacity:.95}.confetti-piece:nth-child(3n){border-radius:50%}.confetti-piece:nth-child(4n){transform:rotate(45deg)}
+@keyframes confettiFall{to{transform:translateY(430px) rotate(720deg);opacity:0}}
+
+
+.bowling-lane{position:relative;max-width:560px;height:430px;margin:18px auto;background:repeating-linear-gradient(90deg,#ead8b7 0,#ead8b7 8px,#f4e6cc 8px,#f4e6cc 16px);border:4px solid #18212f;border-radius:28px;overflow:hidden;box-shadow:inset 0 0 0 10px rgba(255,255,255,.35)}
+.bowling-lane:after{content:"";position:absolute;left:8%;right:8%;bottom:8%;height:4px;background:#18212f;opacity:.35}
+.pins{position:absolute;left:0;right:0;top:5%;height:58%;z-index:2}.bowling-pin{position:absolute;background:transparent;border:0;font-size:29px;cursor:pointer;transition:.35s;transform-origin:center bottom}.bowling-pin.knocked{transform:translateY(18px) rotate(75deg) scale(.65);opacity:.2}.bowling-ball{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);width:54px;height:54px;border-radius:50%;background:#202936;color:#fff;border:4px solid #101722;display:flex;align-items:center;justify-content:center;font-size:24px;z-index:4;transition:left .2s}.bowling-ball.roll{animation:bowlingRoll .65s ease-in forwards}.bowling-controls{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap}.bowling-controls input{width:min(300px,75%)}
+@keyframes bowlingRoll{to{bottom:72%;transform:translateX(-50%) scale(.72) rotate(720deg)}}
+.bouquet-scene{position:relative;min-height:330px;display:flex;align-items:flex-end;justify-content:center;gap:8px;padding-top:25px}.bouquet-wrap{position:relative;width:210px;height:245px;animation:bouquetBob 1s ease-in-out infinite}.bouquet-paper{position:absolute;left:25px;top:60px;width:160px;height:150px;background:linear-gradient(135deg,#ffd7e5,#fff1b8);clip-path:polygon(10% 0,90% 0,72% 100%,28% 100%);border:4px solid #18212f;display:flex;align-items:center;justify-content:center}.bloom{position:absolute;font-size:43px;filter:drop-shadow(1px 2px 0 #18212f);animation:flowerSway 1.4s ease-in-out infinite alternate}.bloom-0{left:20px;top:15px}.bloom-1{left:62px;top:0}.bloom-2{left:102px;top:20px}.bloom-3{left:40px;top:42px}.bloom-4{left:82px;top:48px}.bloom-5{left:122px;top:52px}.bloom-6{left:5px;top:52px}.bloom-7{left:62px;top:76px}.bloom-8{left:100px;top:78px}.bouquet-ribbon{position:absolute;left:89px;bottom:55px;font-size:28px;z-index:4}.winner-character{position:relative;width:130px;height:220px;animation:winnerJump .55s ease-in-out infinite alternate;text-align:center}.winner-face{font-size:62px;position:absolute;top:0;left:34px}.winner-body{font-size:70px;position:absolute;top:65px;left:28px}.winner-arms{position:absolute;top:70px;left:5px;font-size:32px;font-weight:900}.winner-legs{position:absolute;top:150px;left:18px;font-size:28px;white-space:nowrap}.win-text{font-size:54px;font-weight:1000;letter-spacing:2px;animation:winPulse .8s ease-in-out infinite alternate}
+@keyframes winnerJump{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-18px) rotate(2deg)}}@keyframes bouquetBob{from{transform:rotate(-2deg) translateY(0)}to{transform:rotate(2deg) translateY(-7px)}}@keyframes flowerSway{from{transform:rotate(-4deg)}to{transform:rotate(5deg)}}@keyframes winPulse{from{transform:scale(1)}to{transform:scale(1.06)}}
+@media(max-width:600px){.bowling-lane{height:360px}.bowling-pin{font-size:23px}.bouquet-scene{transform:scale(.86);transform-origin:bottom center;margin-top:-25px}.win-text{font-size:42px}}
+
+.game-nav-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;justify-content:flex-end}.back-challenge-btn:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:700px){.game-nav-actions{justify-content:stretch}.game-nav-actions .btn{flex:1;min-width:0}}
+
+/* V6 ending character */
+.bouquet-box.v6-ending{
+  position:relative;
+  overflow:hidden;
+  min-height:560px;
+  padding:28px 20px 24px;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(255,255,255,.95), rgba(255,248,217,.92) 52%, rgba(247,234,255,.95));
+}
+.v6-ending-scene{
+  position:relative;
+  min-height:500px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  overflow:hidden;
+}
+.v6-winner-art{
+  position:relative;
+  z-index:4;
+  display:block;
+  width:min(760px,94%);
+  height:auto;
+  max-height:500px;
+  object-fit:contain;
+  object-position:center bottom;
+  animation:v6WinnerFloat 1.35s ease-in-out infinite;
+  filter:drop-shadow(0 16px 12px rgba(24,33,47,.16));
+  will-change:transform;
+}
+.v6-confetti{
+  position:absolute;
+  inset:0;
+  z-index:6;
+  pointer-events:none;
+  overflow:hidden;
+}
+.v6-confetti-piece{
+  position:absolute;
+  top:-30px;
+  width:11px;
+  height:20px;
+  border:2px solid #18212f;
+  border-radius:3px;
+  opacity:.95;
+  animation:v6ConfettiFall var(--fall,3.4s) linear var(--delay,0s) infinite;
+  transform:translate3d(0,0,0) rotate(0deg);
+}
+.v6-confetti-piece.circle{border-radius:50%;width:13px;height:13px}
+.v6-confetti-piece.star{width:18px;height:18px;border:0;background:transparent!important}
+.v6-confetti-piece.star::before{content:"✦";font-size:22px;line-height:18px;color:#18212f}
+@keyframes v6WinnerFloat{
+  0%,100%{transform:translateY(0) rotate(-1deg)}
+  50%{transform:translateY(-22px) rotate(1deg)}
+}
+@keyframes v6ConfettiFall{
+  0%{transform:translate3d(0,-35px,0) rotate(0deg);opacity:0}
+  8%{opacity:1}
+  50%{opacity:1}
+  100%{transform:translate3d(var(--drift,0px),620px,0) rotate(var(--spin,720deg));opacity:.15}
+}
+.v6-ending .win-text{
+  position:relative;
+  z-index:8;
+  margin:0 0 4px;
+}
+.v6-ending .ending-subtitle{
+  position:relative;
+  z-index:8;
+  margin:0 0 8px;
+  font-weight:800;
+}
+@media(max-width:700px){
+  .bouquet-box.v6-ending{min-height:460px;padding:22px 10px 18px}
+  .v6-ending-scene{min-height:390px}
+  .v6-winner-art{width:100%;max-height:390px}
+  .v6-confetti-piece{width:8px;height:15px}
+}
+
+
+/* ===== V7 ORIGINAL IMAGE MAP ===== */
+.map-image-board{
+  position:relative;
+  width:100%;
+  aspect-ratio:1752/898;
+  overflow:hidden;
+  border-radius:22px;
+  border:3px solid var(--ink);
+  background:#f4ead2;
+}
+.adventure-map-art{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:fill;
+  user-select:none;
+  -webkit-user-drag:none;
+}
+.map-hotspots{
+  position:absolute;
+  inset:0;
+}
+.map-hotspot{
+  position:absolute;
+  transform:translate(-50%,-50%);
+  width:10.5%;
+  height:14%;
+  min-width:54px;
+  min-height:48px;
+  border:0;
+  border-radius:50%;
+  background:transparent;
+  cursor:pointer;
+  padding:0;
+  outline:none;
+}
+.map-hotspot:hover,
+.map-hotspot:focus-visible{
+  background:rgba(255,255,255,.18);
+  box-shadow:0 0 0 4px rgba(255,255,255,.9),0 0 0 8px rgba(31,41,55,.45);
+}
+.map-hotspot.current{
+  animation:mapHotspotPulse 1.6s ease-in-out infinite;
+}
+.map-hotspot.locked{
+  cursor:not-allowed;
+}
+@keyframes mapHotspotPulse{
+  50%{box-shadow:0 0 0 6px rgba(255,255,255,.55),0 0 0 10px rgba(31,41,55,.22)}
+}
+
+/* ===== V7 ORIGINAL CHALLENGE SCENES ===== */
+#challenge.scene-background{
+  position:relative;
+  overflow:hidden;
+  min-height:620px;
+  border:0;
+  padding:0;
+  background-image:var(--scene-bg);
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  box-shadow:var(--soft);
+}
+#challenge.scene-background::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:rgba(255,250,240,.30);
+  z-index:0;
+  pointer-events:none;
+}
+.challenge-scene-content{
+  position:relative;
+  z-index:1;
+  min-height:620px;
+  padding:24px;
+  background:rgba(255,255,255,.10);
+}
+.challenge-scene-content > .challenge-card,
+.challenge-scene-content > .event-card{
+  background:rgba(255,253,247,.94)!important;
+  backdrop-filter:blur(1.5px);
+}
+.challenge-scene-content > .challenge-head,
+.challenge-scene-content > .question,
+.challenge-scene-content > .choices,
+.challenge-scene-content > .battle,
+.challenge-scene-content > .snake-q,
+.challenge-scene-content > .memory-grid,
+.challenge-scene-content > p{
+  background:rgba(255,253,247,.90);
+  border-radius:18px;
+  padding:14px;
+  backdrop-filter:blur(1.5px);
+}
+.challenge-scene-content > .challenge-head{
+  border:3px solid var(--ink);
+}
+.challenge-scene-content > .choices{
+  border:0;
+  padding:10px;
+}
+@media(max-width:700px){
+  #challenge.scene-background,
+  .challenge-scene-content{min-height:540px}
+  .challenge-scene-content{padding:12px}
+  .map-hotspot{min-width:42px;min-height:40px}
+}
+
+
+/* ===== V8 STORY SCREENS ===== */
+.story-screen{
+  position:relative;
+  min-height:650px;
+  overflow:hidden;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  padding:32px;
+  background-image:var(--story-bg);
+  background-size:cover;
+  background-position:center;
+  border-radius:24px;
+  border:3px solid var(--ink);
+}
+.story-overlay{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(to top,rgba(12,20,28,.76) 0%,rgba(12,20,28,.30) 48%,rgba(12,20,28,.08) 100%);
+}
+.story-panel{
+  position:relative;
+  z-index:2;
+  width:min(820px,94%);
+  padding:26px 28px 24px;
+  border:3px solid var(--ink);
+  border-radius:26px;
+  background:rgba(255,252,242,.95);
+  box-shadow:0 14px 40px rgba(0,0,0,.28);
+  text-align:center;
+  animation:storyPanelIn .55s cubic-bezier(.2,.8,.2,1);
+}
+.story-kicker{
+  display:inline-block;
+  font-size:13px;
+  font-weight:1000;
+  letter-spacing:1.5px;
+  color:#7c3f2b;
+  margin-bottom:7px;
+}
+.story-panel h2{
+  margin:0 0 10px;
+  font-family:Fredoka, sans-serif;
+  font-size:clamp(32px,5vw,54px);
+  line-height:1;
+}
+.story-text{
+  margin:0 auto 14px;
+  max-width:720px;
+  font-size:18px;
+  line-height:1.55;
+  font-weight:750;
+}
+.story-task{
+  max-width:720px;
+  margin:0 auto 18px;
+  padding:13px 16px;
+  border-radius:16px;
+  background:#fff4c9;
+  border:2px dashed #8c6f45;
+  font-size:16px;
+  line-height:1.45;
+}
+.story-actions{
+  display:flex;
+  justify-content:center;
+  gap:9px;
+  flex-wrap:wrap;
+}
+.story-actions .btn{min-height:46px}
+@keyframes storyPanelIn{
+  from{opacity:0;transform:translateY(30px) scale(.97)}
+  to{opacity:1;transform:none}
+}
+@media(max-width:700px){
+  .story-screen{min-height:570px;padding:14px 10px}
+  .story-panel{padding:20px 16px}
+  .story-text{font-size:15px}
+  .story-task{font-size:14px}
+}
+
+
+/* ===== V9 STORY: IMAGE FIRST ===== */
+.story-screen-v9{position:relative;width:100%;max-width:1120px;margin:0 auto;overflow:hidden;border-radius:22px;border:3px solid var(--ink);background:#101820;box-shadow:0 12px 30px rgba(0,0,0,.2);aspect-ratio:1672/941}
+.story-art-v9{display:block;width:100%;height:100%;object-fit:contain;object-position:center;background:#101820}
+.story-shade-v9{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top,rgba(0,0,0,.68) 0%,rgba(0,0,0,.10) 31%,transparent 58%)}
+.story-caption-v9{position:absolute;z-index:3;left:0;right:0;bottom:0;padding:15px 20px 16px;color:#fff;text-align:center;text-shadow:0 2px 5px rgba(0,0,0,.65)}
+.story-kicker-v9{font-size:11px;font-weight:1000;letter-spacing:1.2px;opacity:.92}
+.story-caption-v9 h2{margin:2px 0;font:700 clamp(20px,3vw,31px) Fredoka,sans-serif;line-height:1}
+.story-caption-v9 p{margin:0 auto 5px;max-width:760px;font-size:clamp(11px,1.25vw,15px);line-height:1.35;font-weight:800}
+.story-task-v9{margin:0 auto 8px;max-width:760px;font-size:clamp(10px,1.15vw,14px);line-height:1.3;font-weight:900}
+.story-actions-v9{display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap}
+.story-actions-v9 .btn{min-height:34px;padding:6px 11px;font-size:12px;border-width:2px;box-shadow:2px 2px 0 var(--ink)}
+@media(max-width:700px){.story-screen-v9{border-radius:14px;border-width:2px}.story-caption-v9{padding:8px}.story-caption-v9 h2{font-size:20px}.story-caption-v9 p{font-size:10px}.story-task-v9{font-size:9px}.story-actions-v9 .btn{font-size:10px;min-height:29px;padding:4px 7px}}
+
+
+/* ===== V17 MOBILE / PORTRAIT RESPONSIVE ===== */
+.map-canvas{position:relative;width:100%;aspect-ratio:1752/898}
+.map-canvas .adventure-map-art,.map-canvas .map-hotspots{position:absolute;inset:0}
+@media(max-width:700px){
+  /* The adventure map stays complete (no cropping); on phones it becomes a swipeable map. */
+  .map-image-board{height:min(70vh,410px);min-height:330px;overflow:auto;display:block;padding:0;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+  .map-canvas{width:760px;min-width:760px;height:389px;aspect-ratio:auto}
+  .map-image-board .adventure-map-art{width:760px;height:389px;object-fit:fill}
+  .map-image-board .map-hotspots{width:760px;height:389px}
+  .map-image-board:after{content:"Geser kiri/kanan untuk melihat seluruh peta";position:sticky;left:10px;bottom:8px;display:block;width:max-content;max-width:calc(100% - 20px);margin:-34px auto 0;padding:6px 10px;border:2px solid var(--ink);border-radius:999px;background:rgba(255,250,240,.94);font-size:11px;font-weight:900;z-index:20;pointer-events:none}
+
+  /* Story art gets its own space in portrait, so captions/buttons can never cover or clip the image. */
+  .story-screen-v9{aspect-ratio:auto;display:flex;flex-direction:column;background:#101820}
+  .story-art-v9{position:relative;width:100%;height:auto;aspect-ratio:1672/941;object-fit:contain;flex:0 0 auto}
+  .story-shade-v9{display:none}
+  .story-caption-v9{position:relative;left:auto;right:auto;bottom:auto;padding:14px 12px 12px;background:rgba(16,24,32,.96);text-shadow:none;color:#fff}
+  .story-caption-v9 h2{font-size:clamp(24px,7vw,32px);line-height:1.05;margin:3px 0 8px}
+  .story-caption-v9 p{font-size:14px;line-height:1.45;margin:0 auto 8px;max-width:100%}
+  .story-task-v9{font-size:13px;line-height:1.4;margin:0 auto 10px}
+  .story-actions-v9{display:grid;grid-template-columns:1fr;gap:8px}
+  .story-actions-v9 .btn{width:100%;min-height:42px;font-size:13px;padding:8px 10px}
+
+  /* Keep the game header readable on narrow screens. */
+  .wrap{padding:10px}
+  .game-head{align-items:flex-start}
+  .game-head > div:first-child{min-width:0}
+  #stageTitle{font-size:clamp(26px,7vw,36px)!important}
+  #stageSubtitle{font-size:13px;line-height:1.35}
+  .stats{width:100%;gap:6px}
+  .stat{padding:6px 9px;font-size:13px}
+
+  /* Challenge cards can use the full portrait width without forcing horizontal overflow. */
+  .challenge-scene-content{padding:10px}
+  .challenge-scene-content > .question{font-size:21px;line-height:1.2;padding:12px}
+  .challenge-scene-content > .choices{padding:6px}
+  .answer{font-size:15px;line-height:1.4;white-space:normal}
+}
+@media(max-width:420px){
+  .map-image-board{height:350px}
+  .map-canvas,.map-image-board .adventure-map-art,.map-image-board .map-hotspots{width:700px;min-width:700px;height:359px}
+  .story-caption-v9{padding:12px 10px 10px}
+  .story-caption-v9 p{font-size:13px}
+  .story-task-v9{font-size:12px}
+}
+
+</style>
+<style>
+#finishTitle{line-height:1.02;text-align:center}
+#finishText{text-align:center;font-size:19px}
+.victory-pulse{animation:victoryPulse 1.1s ease-in-out infinite alternate}
+@keyframes victoryPulse{from{transform:scale(1)}to{transform:scale(1.025)}}
+</style>
+<style>
+#finishTitle{line-height:1.08;text-align:center}
+#finishText{text-align:center;font-size:19px}
+#bouquetReveal .win-text{display:none}
+</style>
+<style>
+.final-question{max-width:900px;margin:0 auto;overflow:visible}
+.final-question .answer{
+ display:flex!important;align-items:flex-start;gap:12px;width:100%;
+ min-height:58px;margin:10px 0!important;padding:15px 18px!important;
+ box-sizing:border-box;line-height:1.45;font-size:16px;
+ white-space:normal!important;overflow:visible!important;cursor:pointer;
+}
+.final-question .answer input[type="radio"]{
+ flex:0 0 auto;width:20px;height:20px;margin:2px 0 0;
+ accent-color:#111;
+}
+.final-question .answer:has(input:checked){outline:3px solid rgba(0,0,0,.14);background:#fff9d8}
+.final-question .btn{width:100%}
+@media(max-width:700px){
+ .final-question .answer{font-size:15px;padding:13px 14px!important;min-height:54px}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="logo">SOCIAL <span>MAZE</span> 🗺️</div>
+    <div id="playerPill" class="player-pill">Belum ada penjelajah</div>
+  </div>
+</header>
+
+<main class="wrap">
+<section id="landing">
+  <div class="hero">
+    <div>
+      <span class="kicker">GAME PEMBELAJARAN SOSIOLOGI SMA</span>
+      <h1>SOCIAL<br><span>MAZE</span></h1>
+      <div class="subtitle">Find The Way Out ✦</div>
+      <div class="quote">“Setiap masalah meninggalkan jejak. Ikuti dampaknya, hadapi tantangannya, dan temukan jalan keluarnya.”</div>
+      <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="openIdentity()">🚀 MULAI PETUALANGAN</button>
+        <button class="btn btn-white" onclick="showRules()">📜 Cara Bermain</button>
+      </div>
+    </div>
+    <div class="map-preview">
+      <div class="compass">🧭</div>
+      <div class="preview-path">
+        <svg viewBox="0 0 500 280" fill="none">
+          <path d="M35 235 C70 180, 105 245, 150 185 S230 70, 275 135 S350 235, 390 155 S430 65, 470 38" stroke="#8c6f45" stroke-width="18" stroke-linecap="round" stroke-dasharray="5 16"/>
+          <circle cx="35" cy="235" r="17" fill="#ff7f6d" stroke="#243047" stroke-width="4"/>
+          <circle cx="150" cy="185" r="17" fill="#ffd85a" stroke="#243047" stroke-width="4"/>
+          <circle cx="275" cy="135" r="17" fill="#9fd8ef" stroke="#243047" stroke-width="4"/>
+          <circle cx="390" cy="155" r="17" fill="#a9dca5" stroke="#243047" stroke-width="4"/>
+          <circle cx="470" cy="38" r="20" fill="#74c77a" stroke="#243047" stroke-width="4"/>
+          <text x="452" y="24" font-size="28">🚪</text>
+        </svg>
+      </div>
+      <b style="font:700 25px Fredoka">10 tempat • 10 jenis tantangan</b>
+      <p style="font-weight:800">Bukan cuma menjawab soal. Kamu akan menjelajahi jalur, memecahkan petunjuk, menolong NPC, bermain ular tangga, bertarung dengan monster, dan berpacu dengan waktu. Mini-game apel hanya muncul saat nyawa habis.</p>
+    </div>
+  </div>
+  <div class="section-card">
+    <h2>🌟 Apa yang menunggumu?</h2>
+    <div class="feature-grid">
+      <div class="feature"><b>❤️ Nyawa & 🌸 Bunga</b><span>Kesalahan punya konsekuensi, tetapi kamu bisa mencari bunga untuk memulihkan nyawa.</span></div>
+      <div class="feature"><b>🧩 Tantangan Beragam</b><span>Petunjuk, word search, ular tangga, puzzle, mini-game, event sosial, dan battle.</span></div>
+      <div class="feature"><b>📈 Makin Dekat, Makin Sulit</b><span>Setiap area menaikkan tingkat tantangan sampai Final Gate.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="selection" class="hidden">
+  <div class="section-card">
+    <div class="game-head"><div><span class="kicker">PETA PETUALANGAN</span><h2 style="font-size:38px;margin-top:10px">Pilih titik awalmu</h2><p style="font-weight:800">Selesaikan satu area untuk membuka area berikutnya.</p></div><button class="btn btn-white" onclick="backHome()">← Beranda</button></div>
+    <div class="map-shell"><div id="bigMap" class="adventure-map"></div></div>
+  </div>
+</section>
+
+<section id="game" class="hidden">
+  <div class="section-card">
+    <div class="game-head">
+      <div class="game-nav-actions"><button class="btn btn-white back-challenge-btn" onclick="goPreviousChallenge()">← Tantangan Sebelumnya</button><button class="btn btn-white" onclick="showSelection()">🗺️ Peta</button></div>
+      <div><span id="stageTag" class="kicker">AREA 01</span><h2 id="stageTitle" style="font-size:38px;margin-top:9px"></h2><div id="stageSubtitle" style="font-weight:800"></div></div>
+      <div class="stats"><div id="lives" class="stat lives">❤️❤️❤️</div><div id="flowers" class="stat flower-count">🌸 0</div><div id="apples" class="stat">🍎 0</div><div id="timerStat" class="stat timer">⏱ —</div></div>
+    </div>
+    <div class="map-shell" style="margin-top:16px"><div id="gameMap" class="adventure-map"></div></div>
+    <div id="challenge" class="challenge"></div>
+  </div>
+</section>
+
+<section id="finish" class="hidden">
+  <div class="section-card finish">
+    <span class="kicker">🎉 GERBANG TERBUKA</span>
+    <h2 id="finishTitle" class="victory-pulse" style="font-size:48px;margin-top:12px">Kamu menemukan jalan keluar!</h2>
+    <p id="finishText" style="font-weight:800"></p>
+    <div class="section-card" style="background:#fff4c9">
+      <h3>📝 Refleksi Penjelajah</h3>
+      <div class="reflection">
+        <textarea id="ref1" placeholder="Apa dampak sosial yang paling kamu ingat dari petualangan ini?"></textarea>
+        <textarea id="ref2" placeholder="Menurutmu, mengapa suatu masalah sosial bisa menimbulkan dampak berantai?"></textarea>
+        <textarea id="ref3" placeholder="Apa tindakan yang menurutmu bisa dilakukan di lingkungan sekitar?"></textarea>
+      </div>
+      <button class="btn btn-blue" style="margin-top:12px" onclick="copyReflection()">📋 Salin Refleksi</button>
+      <button class="btn btn-primary" style="margin-top:12px" onclick="submitReflection()">💐 KIRIM REFLEKSI & TERIMA HADIAH</button>
+    </div>
+    <div id="bouquetReveal" class="hidden bouquet-box v6-ending" style="margin-top:18px">
+      <div id="confettiLayer"></div>
+      <div class="win-text">MENANG!!</div>
+      <p style="font-weight:900;margin:8px 0">Inilah hasil perjalananmu.</p>
+      <div id="bouquet" class="bouquet"></div>
+      <p id="bouquetText" style="font-weight:900"></p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="showSelection()">🗺️ Kembali ke Peta</button>
+      <button class="btn btn-white" onclick="restartAll()">🔄 Mulai dari Awal</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<div id="identityModal" class="modal-back hidden">
+  <div class="modal">
+    <div class="game-head"><div><span class="kicker">🧭 IDENTITAS PENJELAJAH</span><h2 style="font-size:36px;margin-top:10px">Siapa yang akan masuk labirin?</h2><p style="font-weight:800;margin:0">Tidak perlu memilih karakter. Fokus pada petualangannya.</p></div><button class="btn btn-white" onclick="closeModal()">✕</button></div>
+    <form onsubmit="saveIdentity(event)">
+      <div class="form-grid">
+        <div class="field"><label>Nama / Kelompok</label><input id="nameInput" required placeholder="Contoh: Kelompok Garuda"></div>
+        <div class="field"><label>Kelas</label><input id="classInput" required placeholder="Contoh: XI-1"></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:20px">🚪 MASUK KE PETA</button>
+    </form>
+  </div>
+</div>
+
+<div id="rulesModal" class="modal-back hidden">
+  <div class="modal">
+    <span class="kicker">📜 CARA BERMAIN</span><h2 style="font-size:40px;margin-top:12px">Jangan takut tersesat!</h2>
+    <ol style="line-height:1.8;font-weight:800">
+      <li>Isi nama dan kelas, lalu masuk ke peta petualangan.</li>
+      <li>Mulai dari Gerbang Awal. Area berikutnya terbuka setelah tantangan selesai.</li>
+      <li>Kamu memiliki <b>3 ❤️ nyawa</b>. Sebagian besar tantangan hanya mengurangi nyawa jika waktu habis. Khusus Ular Tangga, jawaban salah dan petak bom juga dapat mengurangi nyawa.</li>
+      <li><b>🌸 3 bunga = 1 ❤️</b>. Jika bunga habis, pohon apel muncul; kumpulkan <b>10 🍎 = 3 ❤️</b>.</li>
+      <li>Setiap area memakai jenis permainan yang berbeda. Semakin dekat jalan keluar, semakin menantang.</li>
+      <li>Di beberapa area, keputusanmu memengaruhi item atau jalur yang kamu dapatkan.</li>
+    </ol>
+    <button class="btn btn-primary" onclick="document.getElementById('rulesModal').classList.add('hidden')">SIAP!</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<footer>Social Maze • Game Edukasi Sosiologi SMA • Dampak Permasalahan Sosial</footer>
+
+<script>
+/* ===== V7 ORIGINAL MAP + CHALLENGE ART =====
+   All artwork below is embedded from the original PNG files supplied by the user.
+   The images themselves are not redrawn, cropped, rearranged, or edited.
+*/
+const adventureMapImage = "images/adventure-map.webp";
+const challengeBackgrounds = {
+  1: "images/area1.webp",
+  2: "images/area2.webp",
+  3: "images/area3.webp",
+  4: "images/area4.webp",
+  5: "images/area5.webp",
+  6: "images/area6.webp",
+  7: "images/area7.webp",
+  8: "images/area8.webp",
+  9: "images/area9.webp",
+  10: "images/area10.webp",
+};
+
+const stages = [
+  {id:1,title:"Gerbang Awal",sub:"Pemanasan • 5 tantangan dasar",icon:"🚩",difficulty:"★",type:"choice5"},
+  {id:2,title:"Jalur Kebun",sub:"Pilih tindakan • Seret keputusan ke jalur",icon:"🌿",difficulty:"★",type:"dragchoice"},
+  {id:3,title:"Gua Petunjuk",sub:"Susun langkah • Temukan urutan jalan keluar",icon:"🧩",difficulty:"★★",type:"sequence2"},
+  {id:4,title:"Pertemuan Tak Terduga",sub:"Event sosial • Pilihanmu punya konsekuensi",icon:"🦊",difficulty:"★★",type:"event"},
+  {id:5,title:"Hutan Kata",sub:"Lempar bola • Jatuhkan 30 botol",icon:"🎯",difficulty:"★★★",type:"bottles"},
+  {id:6,title:"Jembatan Ular Tangga",sub:"Ular tangga • Dadu + pertanyaan pilihan ganda",icon:"🎲",difficulty:"★★★",type:"snake"},
+  {id:7,title:"Gua Monster",sub:"Battle • Gunakan pengetahuan dan item",icon:"👾",difficulty:"★★★★",type:"monster"},
+  {id:8,title:"Jembatan Waktu",sub:"Time challenge • Jangan sampai terlambat",icon:"⏳",difficulty:"★★★★",type:"timed"},
+  {id:9,title:"Petunjuk Terakhir",sub:"Cari si kembar • Temukan semua pasangan",icon:"🔎",difficulty:"★★★★★",type:"memory"},
+  {id:10,title:"Jembatan Terakhir",sub:"Tantangan terpadu • Temukan jalan keluar",icon:"🌉",difficulty:"★★★★★",type:"final"}
+];
+
+let unlocked = Math.max(1, Math.min(10, Number(localStorage.getItem("socialMazeAdventureUnlockedV16")) || 1));
+
+let gerbang1Index = 0;
+let dragChoiceIndex = 0;
+let sequence2Index = 0;
+let sequencePicked = [];
+let sequence2State = {items:[]};
+
+let player={name:"",cls:""};
+let lives=3,flowers=0,apples=0,current=0,timer=null,timeLeft=0,timerToken=0,appleCount=0,monsterHP=100,robotPos=1,playerPos=1;
+let crossAnswers=Array(10).fill("");
+let wordFound=new Set(),memoryOpen=[],memoryMatched=new Set();
+
+const mapPositions=[
+ [6.5,84.0],[20.9,61.5],[36.4,77.0],[40.0,45.8],[55.6,56.0],
+ [52.7,23.0],[70.8,73.5],[68.5,38.7],[85.0,47.0],[89.3,14.5]
+];
+
+function $(id){return document.getElementById(id)}
+function toast(msg){$("toast").textContent=msg;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),2600)}
+function openIdentity(){ $("identityModal").classList.remove("hidden"); }
+function closeModal(){ $("identityModal").classList.add("hidden"); }
+function showRules(){ $("rulesModal").classList.remove("hidden"); }
+function backHome(){stopAllGameMusic(); stopAdventureAudio(); $("selection").classList.add("hidden"); $("landing").classList.remove("hidden"); }
+function saveIdentity(e){
+ e.preventDefault();
+ player.name=$("nameInput").value.trim(); player.cls=$("classInput").value.trim();
+ if(!player.name||!player.cls)return;
+ closeModal(); $("landing").classList.add("hidden"); showSelection();
+ $("playerPill").textContent=`🧭 ${player.name} • ${player.cls}`;
+}
+function showSelection(){
+ startAdventureMusic();
+ $("landing").classList.add("hidden");$("finish").classList.add("hidden");$("game").classList.add("hidden");$("selection").classList.remove("hidden");renderMap("bigMap");
+}
+function renderMap(id){ unlocked=Math.max(1,Math.min(10,Number(localStorage.getItem("socialMazeAdventureUnlockedV16"))||1));
+ const el=$(id);
+ el.innerHTML=`<div class="map-image-board">
+   <div class="map-canvas">
+     <img class="adventure-map-art" src="${adventureMapImage}" alt="Peta Labirin Social Maze">
+     <div class="map-hotspots" aria-label="Titik tantangan Social Maze"></div>
+   </div>
+ </div>`;
+ const layer=el.querySelector(".map-hotspots");
+
+ // These hotspots sit over the numbered locations already drawn in the supplied map.
+ // The artwork itself is untouched; only transparent click targets are added.
+ const hotspotPositions=[
+   [6.5,84.0],[20.9,61.5],[36.4,77.0],[40.0,45.8],[55.6,56.0],
+   [52.7,23.0],[70.8,73.5],[68.5,38.7],[85.0,47.0],[89.3,14.5]
+ ];
+ stages.forEach((s,i)=>{
+   const h=document.createElement("button");
+   h.type="button";
+   h.className="map-hotspot"+(i+1>unlocked?" locked":"")+(i+1===unlocked?" current":"");
+   h.style.left=hotspotPositions[i][0]+"%";
+   h.style.top=hotspotPositions[i][1]+"%";
+   h.setAttribute("aria-label",`Tantangan ${s.id}: ${s.title}`);
+   h.title=`${s.id}. ${s.title}`;
+   h.onclick=()=>{
+     if(i+1<=unlocked) startStage(i);
+     else toast("🔒 Selesaikan tantangan sebelumnya dulu!");
+   };
+   layer.appendChild(h);
+ });
+}
+function renderGameMap(){
+ // The same original map is shown in the game header without redrawing it.
+ renderMap("gameMap");
+}
+function avatarEmoji(){return player.acc==="cap"?"🧢":player.acc==="flower"?"🌸":player.acc==="glasses"?"🤓":"🧭"}
+function updateStats(){
+  $("lives").textContent="❤️".repeat(lives)+"🖤".repeat(Math.max(0,3-lives));
+  $("flowers").textContent="🌸 "+flowers;
+  if($("apples")) $("apples").textContent="🍎 "+apples;
+  $("timerStat").textContent=timeLeft?"⏱ "+timeLeft+"s":"⏱ —";
+}
+function loseLife(reason="Waktu habis!"){
+  lives=Math.max(0,lives-1); updateStats(); toast("💔 "+reason);
+  if(lives<=0){
+    setTimeout(()=>recoverLife(),300);
+    return false;
+  }
+  return true;
+}
+function recoverLife(){
+  clearTimer();
+  // Bunga menjadi nyawa: 3 bunga = 1 ❤️. Pakai sebanyak mungkin sebelum pohon apel muncul.
+  if(flowers>=3){
+    flowers-=3; lives=1; updateStats();
+    $("challenge").innerHTML=`<div class="challenge-card" style="text-align:center"><div style="font-size:64px">🌸🌸🌸 ➜ ❤️</div><h2>Bunga menyelamatkanmu!</h2><p style="font-weight:800">3 bunga berubah menjadi 1 nyawa. Tantangan akan dilanjutkan.</p></div>`;
+    setTimeout(()=>renderStage(),900); return;
+  }
+  showAppleTree();
+}
+function showAppleTree(){
+  const box=$("challenge");
+  box.innerHTML=`<div class="challenge-card"><div class="challenge-top"><span class="pill">🌳 POHON APEL PENYELAMAT</span><span class="mini-note">KUMPULKAN 10 APEL</span></div><h2>Nyawamu habis, dan bungamu sudah tidak cukup.</h2><p class="muted">Klik 10 apel di pohon. Setelah terkumpul, kamu mendapat <b>3 ❤️</b> dan melanjutkan perjalanan.</p><div class="apple-tree-area" id="appleTreeArea"><div class="apple-tree">🌳</div></div><div id="treeCount" class="feedback" style="text-align:center;font-size:20px">🍎 0 / 10</div></div>`;
+  let got=0; const area=$("appleTreeArea");
+  for(let i=0;i<10;i++){ const b=document.createElement("button"); b.className="tree-apple"; b.textContent="🍎"; b.style.left=(25+Math.random()*48)+"%"; b.style.top=(12+Math.random()*43)+"%"; b.onclick=()=>{if(b.disabled)return;b.disabled=true;b.style.transform="scale(1.5)";b.style.opacity=".15";got++;$("treeCount").textContent=`🍎 ${got} / 10`;if(got===10){apples+=10;lives=3;updateStats();toast("🌳 10 apel terkumpul! +3 ❤️");setTimeout(()=>renderStage(),800)}}; area.appendChild(b); }
+  applyChallengeBackground();
+  wrapChallengeContent();
+}
+function reward(n=1,msg="Tantangan selesai!"){flowers+=n;updateStats();toast("🌸 +"+n+" "+msg)}
+function rewardApple(n=1,msg="Apel ditemukan!"){apples+=n;updateStats();toast("🍎 +"+n+" "+msg)}
+function goPreviousChallenge(){
+  if(current<=0){toast("🏁 Kamu sudah berada di tantangan pertama.");return;}
+  clearTimer();
+  current-=1;
+  resetStageForReplay(current);
+  updateGameHeader();
+  renderStage();
+  toast("↩️ Kembali ke tantangan sebelumnya.");
+}
+function resetStageForReplay(i){
+  if(i===0) gerbang1Index=0;
+  if(i===1) dragChoiceIndex=0;
+  if(i===2){sequence2Index=0;sequencePicked=[];sequence2State={items:[]};}
+  if(i===5){snakeQuestionIndex=0;snakeQuestion=null;snakePendingRoll=0;playerPos=1;}
+  if(i===6) monsterQuestionIndex=0;
+  if(i===7){}
+  if(i===8){memoryOpen=[];memoryMatched=new Set();}
+  if(i===9) finalStepIndex=0;
+}
+function updateGameHeader(){
+  const s=stages[current];
+  $("stageTag").textContent=`AREA ${String(current+1).padStart(2,"0")} • ${s.difficulty}`;
+  $("stageTitle").textContent=s.title;
+  $("stageSubtitle").textContent=s.sub;
+}
+
+/* ===== V9 STORY + REAL AUDIO ===== */
+const storyScenes={
+1:{title:"GERBANG UTAMA",kicker:"PETUALANGAN DIMULAI",text:"Gerbang terbuka. Perjalananmu dimulai di sini.",task:"Selesaikan tantangan pertama untuk menemukan jalan berikutnya.",button:"🚩 MULAI TANTANGAN 1"},
+2:{title:"JALUR KEBUN",kicker:"JALAN BERIKUTNYA",text:"Kebun tampak tenang. Tapi ada situasi yang membutuhkan kepekaanmu.",task:"Amati, pahami, lalu tentukan tindakan yang tepat.",button:"🌿 MASUK KE JALUR KEBUN"},
+3:{title:"GUA PETUNJUK",kicker:"SEBUAH PETUNJUK MENUNGGU",text:"Di dalam gua, setiap langkah harus ditempatkan pada urutan yang tepat.",task:"Susun langkah hingga jalan keluar terbuka.",button:"🧩 MASUK KE GUA PETUNJUK"},
+4:{title:"PERTEMUAN TAK TERDUGA",kicker:"TUNGGU... ADA SUARA",text:"Dari balik semak terdengar tangisan kecil. Seekor rubah tampak membutuhkan bantuan.",task:"Apa yang harus kita lakukan?",button:"🦊 TEMUI RUBAH"},
+5:{title:"HUTAN KATA",kicker:"JALAN PENUH JEJAK",text:"Kamu menemukan hutan dengan jejak kata di sepanjang perjalanan.",task:"Buka jalan dengan tantangan bowling sebelum waktu habis.",button:"🎳 MASUK KE HUTAN KATA"},
+6:{title:"ULAR TANGGA",kicker:"SATU LANGKAH, SATU KONSEKUENSI",text:"Sebuah jembatan permainan terbentang di atas jurang.",task:"Lempar dadu, jawab pertanyaan, dan tentukan langkahmu.",button:"🎲 MULAI ULAR TANGGA"},
+7:{title:"GUA MONSTER",kicker:"PENJAGA DI DALAM GUA",text:"Monster itu ternyata menyimpan sebuah petunjuk penting.",task:"Hadapi tantangan dan temukan apa yang ia jaga.",button:"👾 MASUK KE GUA MONSTER"},
+8:{title:"JEMBATAN WAKTU",kicker:"WAKTU TERUS BERGERAK",text:"Jembatan di depanmu terus berdetak bersama waktu.",task:"Hubungkan informasi sebelum waktu habis.",button:"⏳ MENYEBERANG"},
+9:{title:"PETUNJUK TERAKHIR",kicker:"HAMPIR SAMPAI",text:"Di bawah langit malam, kamu menemukan ruang berisi petunjuk-petunjuk terakhir.",task:"Temukan pasangan yang tepat.",button:"🔎 CARI PETUNJUK"},
+10:{title:"JEMBATAN TERAKHIR",kicker:"TINGGAL SELANGKAH LAGI",text:"Gerbang tujuan terlihat di ujung jembatan.",task:"Satukan semua yang telah kamu pelajari untuk membuka jalan terakhir.",button:"🌉 HADAPI TANTANGAN TERAKHIR"}
+};
+
+const REAL_ADVENTURE_MUSIC="https://cdn.pixabay.com/download/audio/2024/06/30/audio_a16274b6fa.mp3?filename=the-wandererx27s-song-220954.mp3";
+const TENSE_MUSIC="https://opengameart.org/sites/default/files/Battle.mp3";
+const VICTORY_MUSIC="https://opengameart.org/sites/default/files/fanfare1.mp3";
+const CORRECT_SFX="https://cdn.pixabay.com/download/audio/2022/03/15/audio_ae19921f50.mp3?filename=correct-2-46134.mp3";
+const WRONG_SFX="https://cdn.pixabay.com/download/audio/2022/02/11/audio_7f0bf4cdc0.mp3?filename=buzzer-or-wrong-answer-20582.mp3";
+let adventureMusicAudio=null,tenseMusicAudio=null,victoryMusicAudio=null,correctAudio=null,wrongAudio=null,foxCryTimer=null;
+
+function ensureRealAudio(){
+ if(!adventureMusicAudio){adventureMusicAudio=new Audio(REAL_ADVENTURE_MUSIC);adventureMusicAudio.loop=true;adventureMusicAudio.volume=.34}
+ if(!tenseMusicAudio){tenseMusicAudio=new Audio(TENSE_MUSIC);tenseMusicAudio.loop=true;tenseMusicAudio.volume=.25}
+ if(!victoryMusicAudio){victoryMusicAudio=new Audio(VICTORY_MUSIC);victoryMusicAudio.loop=false;victoryMusicAudio.volume=.52}
+}
+function startAdventureMusic(){
+ ensureRealAudio();
+ if(tenseMusicAudio)tenseMusicAudio.pause();
+ if(victoryMusicAudio){victoryMusicAudio.pause();victoryMusicAudio.currentTime=0}
+ adventureMusicAudio.play().catch(()=>{});
+}
+function startTenseMusic(){
+ ensureRealAudio();
+ if(adventureMusicAudio)adventureMusicAudio.pause();
+ if(victoryMusicAudio){victoryMusicAudio.pause();victoryMusicAudio.currentTime=0}
+ tenseMusicAudio.currentTime=0;
+ tenseMusicAudio.play().catch(()=>{});
+}
+function startVictoryMusic(){
+ ensureRealAudio();
+ if(adventureMusicAudio)adventureMusicAudio.pause();
+ if(tenseMusicAudio)tenseMusicAudio.pause();
+ victoryMusicAudio.currentTime=0;
+ victoryMusicAudio.play().catch(()=>{});
+}
+function stopAdventureMusic(){if(adventureMusicAudio){adventureMusicAudio.pause();adventureMusicAudio.currentTime=0}}
+function stopAllGameMusic(){
+ ensureRealAudio();
+ [adventureMusicAudio,tenseMusicAudio,victoryMusicAudio].forEach(a=>{if(a){a.pause();a.currentTime=0}});
+}
+function playAnswerSound(correct){ /* correct/wrong tet-tot disabled; background music remains */ }
+function playFoxCry(){
+ const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const ctx=new AC();
+ const cry=(f1,f2,d)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type="sine";o.frequency.setValueAtTime(f1,ctx.currentTime+d);o.frequency.exponentialRampToValueAtTime(f2,ctx.currentTime+d+.42);g.gain.setValueAtTime(.0001,ctx.currentTime+d);g.gain.exponentialRampToValueAtTime(.065,ctx.currentTime+d+.06);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+d+.48);o.connect(g);g.connect(ctx.destination);o.start(ctx.currentTime+d);o.stop(ctx.currentTime+d+.52)};
+ cry(690,430,0);cry(560,350,.52);cry(620,390,1.05);foxCryTimer=setTimeout(()=>{try{ctx.close()}catch(e){}},1900);
+}
+function stopAdventureAudio(){if(foxCryTimer){clearTimeout(foxCryTimer);foxCryTimer=null}}
+function toggleStoryMusic(btn){
+ ensureRealAudio();
+ const active=current===9?tenseMusicAudio:adventureMusicAudio;
+ if(!active.paused){active.pause();btn.textContent="🎵 Nyalakan musik"}
+ else{active.play().catch(()=>{});btn.textContent="🔊 Matikan musik"}
+}
+function showStoryIntro(index){
+ clearTimer();if(foxCryTimer){clearTimeout(foxCryTimer);foxCryTimer=null}
+ current=index;
+ if(index===9)startTenseMusic();else startAdventureMusic();
+ $("selection").classList.add("hidden");$("finish").classList.add("hidden");$("game").classList.remove("hidden");
+ updateGameHeader();renderGameMap();
+ const story=storyScenes[index+1],bg=challengeBackgrounds[index+1],box=$("challenge");
+ box.classList.remove("scene-background");box.style.removeProperty("--scene-bg");
+ box.innerHTML=`<div class="story-screen-v9">
+   <img class="story-art-v9" src="${bg}" alt="Cerita Tantangan ${index+1}">
+   <div class="story-shade-v9"></div>
+   <div class="story-caption-v9">
+     <span class="story-kicker-v9">${story.kicker}</span><h2>${story.title}</h2>
+     <p>${story.text}</p><div class="story-task-v9">🧭 ${story.task}</div>
+     <div class="story-actions-v9">
+       <button class="btn btn-primary" onclick="enterStoryChallenge()">${story.button}</button>
+       <button class="btn btn-white story-audio-btn" onclick="toggleStoryMusic(this)">🔊 Matikan musik</button>
+       <button class="btn btn-white" onclick="showSelection()">🗺️ Peta</button>
+     </div>
+   </div>
+ </div>`;
+ if(index===3)setTimeout(()=>{if(current===3&&$("challenge").querySelector(".story-screen-v9"))playFoxCry()},450);
+}
+function resetSocialMazeV14Progress(){
+ localStorage.removeItem("socialMazeAdventureUnlockedV16");
+ localStorage.removeItem("socialMazeAdventureUnlockedV16");
+ localStorage.removeItem("socialMazeAdventureUnlockedV16");
+ unlocked=1;
+ localStorage.setItem("socialMazeAdventureUnlockedV16","1");
+ showSelection();
+ toast("🔄 Progress direset. Hanya Tantangan 1 yang terbuka.");
+}
+function enterStoryChallenge(){if(current===9)startTenseMusic();else startAdventureMusic();renderStage()}
+
+function startStage(i){
+ unlocked=Math.max(1,Math.min(10,Number(localStorage.getItem("socialMazeAdventureUnlockedV16"))||1));
+ unlocked=Math.max(1,Math.min(10,Number(localStorage.getItem("socialMazeAdventureUnlockedV16"))||1));
+ if(i<0 || i>9)return;
+ if(i+1>unlocked){toast("🔒 Tantangan ini belum terbuka.");return}
+ if(i===0) gerbang1Index=0;
+ if(i===1) dragChoiceIndex=0;
+ if(i===2) sequence2Index=0;
+ if(i===5) snakeQuestionIndex=0;
+ if(i===6) monsterQuestionIndex=0;
+
+ current=i;
+ lives=Math.max(lives,1);
+ currentStep=0;
+ appleCount=0;
+ wordFound=new Set();
+ memoryOpen=[];
+ memoryMatched=new Set();
+ monsterHP=100;
+ playerPos=1;
+ robotPos=1;
+
+ $("selection").classList.add("hidden");
+ $("finish").classList.add("hidden");
+ $("game").classList.remove("hidden");
+ updateGameHeader();
+ showStoryIntro(i);
+}
+function applyChallengeBackground(){ const ch=$("challenge"); ch.classList.remove("scene-background"); ch.style.removeProperty("--scene-bg"); }
+function wrapChallengeContent(){
+  const ch=$("challenge");
+  if(!ch.firstElementChild) return;
+  if(ch.firstElementChild.classList.contains("challenge-scene-content")) return;
+  const wrap=document.createElement("div");
+  wrap.className="challenge-scene-content";
+  while(ch.firstChild) wrap.appendChild(ch.firstChild);
+  ch.appendChild(wrap);
+}
+function renderStage(){
+  const s=stages[current];
+  $("stageTag").textContent=`AREA ${String(current+1).padStart(2,"0")} • ${s.difficulty}`;
+  $("stageTitle").textContent=s.title;
+  $("stageSubtitle").textContent=s.sub;
+  clearTimer();
+
+  if(s.type==="choice5") renderChoice5();
+  else if(s.type==="dragchoice") renderDragChoice();
+  else if(s.type==="sequence2") renderSequence2();
+  else if(s.type==="event") renderEvent($("challenge"));
+  else if(s.type==="bottles") renderBottleThrow($("challenge"));
+  else if(s.type==="snake") renderSnake($("challenge"));
+  else if(s.type==="monster") renderMonster($("challenge"));
+  else if(s.type==="timed") renderTimed($("challenge"));
+  else if(s.type==="memory") renderMemory($("challenge"));
+  else if(s.type==="final") renderFinal($("challenge"));
+
+  applyChallengeBackground();
+  wrapChallengeContent();
+}
+function finishStage(){
+ clearTimer();
+ if(current===9){showFinish();return}
+ startAdventureMusic();
+ const next=current+1;
+ if(next+1>unlocked){
+   unlocked=Math.min(10,next+1);
+   localStorage.setItem("socialMazeAdventureUnlockedV16",String(unlocked));
+ }
+ setTimeout(()=>{showSelection();toast(`🗺️ Tantangan ${next+1} sudah terbuka. Klik nomornya di peta!`)},350);
+}
+function clearTimer(){
+  if(timer){clearInterval(timer);timer=null}
+  timeLeft=0;
+  updateStats();
+}
+function startCountdown(seconds,onTimeout){
+  clearTimer();
+  timeLeft=seconds;
+  updateStats();
+  const token=++timerToken;
+  timer=setInterval(()=>{
+    if(token!==timerToken){clearInterval(timer);return}
+    timeLeft--;
+    updateStats();
+    if(timeLeft<=0){
+      clearInterval(timer);
+      timer=null;
+      timeLeft=0;
+      updateStats();
+      onTimeout();
+    }
+  },1000);
+}
+function startQuestionTimer(onTimeout){
+  startCountdown(14,onTimeout);
+}
+function startChallengeTimer(onTimeout){
+  startCountdown(60,onTimeout);
+}
+function timeOutCurrentQuestion(message="Waktu habis!"){
+  toast("⏰ "+message);
+  loseLife("Waktu habis.");
+  if(lives>0)setTimeout(()=>renderStage(),450);
+}
+function renderChoice(box){
+ box.innerHTML=`<div class="challenge-head"><span class="stage-tag">🔍 JEJAK SOSIAL</span><b>${stages[current].difficulty}</b></div>
+ <div class="question">Keluarga mengalami kemiskinan dalam waktu lama. Dampak sosial yang paling masuk akal adalah...</div>
+ <div class="choices">${[
+ ["A. Anak dapat mengalami keterbatasan akses pendidikan",1],
+ ["B. Semua kebutuhan otomatis terpenuhi",0],
+ ["C. Kesempatan kerja pasti meningkat",0],
+ ["D. Masalah sosial langsung hilang",0]].map((x,i)=>`<button class="answer" onclick="answerChoice(${x[1]},this)">${x[0]}</button>`).join("")}</div>
+ <div id="feedback"></div>`;
+}
+function answerChoice(ok,btn){
+ playAnswerSound(!!ok);
+ document.querySelectorAll(".answer").forEach(b=>b.disabled=true);
+ if(ok){btn.classList.add("correct");reward(1,"Jawaban tepat!");setTimeout(finishStage,700)}
+ else{btn.classList.add("wrong");$("feedback").innerHTML=`<div class="feedback">💡 Belum tepat. Nyawa tidak berkurang; coba lagi dan perhatikan hubungan sebab-akibatnya.</div><button class="btn btn-white" style="margin-top:10px" onclick="renderStage()">Coba lagi</button>`}
+}
+function renderChoice2(box){
+ box.innerHTML=`<div class="challenge-head"><span class="stage-tag">🌿 JALUR KEBUN</span><b>★</b></div>
+ <div class="question">Setelah kebakaran hutan menyebabkan kualitas udara memburuk, dampak sosial yang paling mungkin muncul berikutnya adalah...</div>
+ <div class="choices">
+   <button class="answer" onclick="answerChoice2(true,this)">A. Gangguan kesehatan dan aktivitas masyarakat</button>
+   <button class="answer" onclick="answerChoice2(false,this)">B. Semua kegiatan masyarakat menjadi lebih lancar</button>
+   <button class="answer" onclick="answerChoice2(false,this)">C. Risiko kesehatan otomatis hilang</button>
+   <button class="answer" onclick="answerChoice2(false,this)">D. Hubungan sosial pasti menjadi lebih harmonis</button>
+ </div>
+ <div id="choice2Feedback"></div>`;
+}
+function answerChoice2(ok,btn){
+ playAnswerSound(!!ok);
+ document.querySelectorAll(".answer").forEach(b=>b.disabled=true);
+ if(ok){btn.classList.add("correct");reward(1,"Jejak dampak ditemukan!");setTimeout(finishStage,650)}
+ else{btn.classList.add("wrong");$("choice2Feedback").innerHTML=`<div class="feedback">💡 Belum tepat. Nyawa tidak berkurang; ikuti rantai dampaknya: kualitas udara memburuk → kesehatan dan aktivitas masyarakat terganggu.</div><button class="btn btn-white" style="margin-top:10px" onclick="renderStage()">Coba lagi</button>`}
+}
+
+/*
+ CROSSWORD CAVE
+ Grid 9 x 9. The six answers are fixed and cross each other.
+ 1. EMPATI
+ 2. KONFLIK
+ 3. SOSIAL
+ 4. APATIS
+ 5. SOLUSI
+ 6. EKONOMI
+*/
+const crosswordWords = [
+ {n:1,word:"EMPATI",row:0,col:1,dir:"across",clue:"Kemampuan memahami perasaan orang lain."},
+ {n:2,word:"KONFLIK",row:0,col:3,dir:"down",clue:"Pertentangan antara pihak-pihak dalam hubungan sosial."},
+ {n:3,word:"SOSIAL",row:2,col:0,dir:"across",clue:"Segala sesuatu yang berkaitan dengan hubungan antarmanusia."},
+ {n:4,word:"APATIS",row:2,col:4,dir:"down",clue:"Sikap tidak peduli terhadap keadaan sekitar."},
+ {n:5,word:"SOLUSI",row:4,col:2,dir:"across",clue:"Jalan keluar untuk menghadapi suatu masalah."},
+ {n:6,word:"EKONOMI",row:4,col:6,dir:"down",clue:"Bidang yang berkaitan dengan produksi, pendapatan, dan kebutuhan."}
+];
+
+function buildCrosswordGrid(){
+ const size=9, cells={};
+ crosswordWords.forEach(w=>{
+   [...w.word].forEach((ch,i)=>{
+     const r=w.row+(w.dir==="down"?i:0), c=w.col+(w.dir==="across"?i:0);
+     cells[`${r}-${c}`]={ch,nums:[]};
+   });
+   cells[`${w.row}-${w.col}`].nums.push(w.n);
+ });
+ return {size,cells};
+}
+function renderCrossword(box){
+ const {size,cells}=buildCrosswordGrid();
+ let grid="";
+ for(let r=0;r<size;r++){
+   for(let c=0;c<size;c++){
+     const cell=cells[`${r}-${c}`];
+     if(!cell) grid+=`<div class="cross-cell black"></div>`;
+     else {
+       const num=cell.nums.length?`<small style="position:absolute;left:3px;top:1px;font-size:9px">${cell.nums[0]}</small>`:"";
+       grid+=`<div class="cross-cell" style="position:relative"><input maxlength="1" data-cw="${r}-${c}" aria-label="Kotak ${r+1}-${c+1}" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z]/g,'')">${num}</div>`;
+     }
+   }
+ }
+ box.innerHTML=`<div class="challenge-head"><span class="stage-tag">🧩 CROSSWORD CAVE</span><b>6 kata</b></div>
+ <p style="font-weight:800">Isi kotak-kotak yang saling bersilangan. Semua jawaban terdiri dari satu kata. Jumlah katanya <b>tepat 6</b>.</p>
+ <div class="cross-grid">${grid}</div>
+ <div class="cross-clues">
+   ${crosswordWords.filter(w=>w.dir==="across").map(w=>`<div class="clue"><b>${w.n} mendatar</b><br>${w.clue}</div>`).join("")}
+   ${crosswordWords.filter(w=>w.dir==="down").map(w=>`<div class="clue"><b>${w.n} menurun</b><br>${w.clue}</div>`).join("")}
+ </div>
+ <button class="btn btn-primary" style="margin-top:14px" onclick="checkCrossword()">🔐 PERIKSA TEKA-TEKI SILANG</button>
+ <div id="crossFeedback"></div>`;
+}
+function checkCrossword(){
+ const {cells}=buildCrosswordGrid();
+ let correct=0,total=Object.keys(cells).length;
+ Object.entries(cells).forEach(([key,data])=>{
+   const el=document.querySelector(`[data-cw="${key}"]`);
+   if(el && el.value===data.ch) correct++;
+ });
+ if(correct===total){
+   reward(2,"Semua 6 kata benar!");
+   setTimeout(finishStage,700);
+ }else{
+   loseLife(`Kotak benar ${correct}/${total}.`);
+   $("crossFeedback").innerHTML=`<div class="feedback">Ada ${total-correct} kotak yang belum tepat. Periksa persilangan kata-katanya.</div>`;
+ }
+}
+
+
+/* ===== VARIASI TANTANGAN BARU ===== */
+
+const gerbang1Questions = [
+  {
+    q:"Sosiologi mempelajari tentang...",
+    opts:["Planet dan benda langit","Masyarakat dan hubungan sosial","Cara membuat makanan","Perubahan cuaca"],
+    answer:"Masyarakat dan hubungan sosial"
+  },
+  {
+    q:"Manakah yang termasuk gejala sosial?",
+    opts:["Hujan turun deras","Gempa bumi","Terjadi perundungan di sekolah","Matahari terbit"],
+    answer:"Terjadi perundungan di sekolah"
+  },
+  {
+    q:"Mengapa masalah sosial perlu dipelajari?",
+    opts:["Agar kita bisa menyalahkan orang lain","Agar kita memahami masalah dan mencari jalan keluar","Agar semua orang harus berpikir sama","Agar masalah terlihat lebih rumit"],
+    answer:"Agar kita memahami masalah dan mencari jalan keluar"
+  },
+  {
+    q:"Contoh hubungan sosial adalah...",
+    opts:["Siswa berdiskusi untuk mengerjakan tugas kelompok","Batu jatuh dari tebing","Hujan turun di halaman","Pohon tumbang karena angin"],
+    answer:"Siswa berdiskusi untuk mengerjakan tugas kelompok"
+  },
+  {
+    q:"Saat menemukan masalah sosial, sikap yang paling tepat adalah...",
+    opts:["Langsung menyalahkan seseorang","Mencari informasi dan memahami masalahnya terlebih dahulu","Menyebarkan kabar yang belum jelas","Pura-pura tidak melihat"],
+    answer:"Mencari informasi dan memahami masalahnya terlebih dahulu"
+  }
+];
+
+function renderChoice5(){
+  const item=gerbang1Questions[gerbang1Index];
+  $("challenge").innerHTML=`
+    <div class="challenge-card gerbang-card">
+      <div class="gerbang-progress">
+        <div><span class="stage-tag">🚩 GERBANG AWAL</span>
+        <div class="gerbang-counter">Tantangan ${gerbang1Index+1} dari ${gerbang1Questions.length}</div></div>
+        <div class="gerbang-dots">${gerbang1Questions.map((_,i)=>`<span class="${i<gerbang1Index?'done ':''}${i===gerbang1Index?'active':''}"></span>`).join("")}</div>
+      </div>
+      <div class="gerbang-question-label">PEMANASAN SOSIOLOGI • ★ • ⏱ 14 DETIK</div>
+      <h2 class="gerbang-question">${item.q}</h2>
+      <div class="choices gerbang-options">
+        ${item.opts.map((o,i)=>`<button type="button" class="answer gerbang-option" onclick="answerChoice5(${i},this)"><span class="answer-letter">${String.fromCharCode(65+i)}</span><span>${o}</span></button>`).join("")}
+      </div>
+      <div id="gerbangFeedback"></div>
+    </div>`;
+  startQuestionTimer(()=>{
+    loseLife("Waktu untuk soal ini habis.");
+    if(lives>0)setTimeout(renderChoice5,450);
+  });
+}
+function answerChoice5(index,button){
+ playAnswerSound(gerbang1Questions[gerbang1Index].opts[index]===gerbang1Questions[gerbang1Index].answer);
+  const item=gerbang1Questions[gerbang1Index];
+  const buttons=document.querySelectorAll(".gerbang-option");
+  if(buttons.length)buttons.forEach(b=>b.disabled=true);
+  if(item.opts[index]!==item.answer){
+    button.classList.add("wrong");
+    $("gerbangFeedback").innerHTML=`<div class="feedback">Belum tepat. Nyawa tidak berkurang karena jawaban salah. Waktu tetap berjalan.</div>`;
+    setTimeout(()=>buttons.forEach(b=>b.disabled=false),450);
+    return;
+  }
+  clearTimer();
+  button.classList.add("correct");
+  flowers++;
+  updateStats();
+  $("gerbangFeedback").innerHTML=`<div class="feedback correct-feedback">✓ Tepat!</div>`;
+  gerbang1Index++;
+  if(gerbang1Index>=gerbang1Questions.length)setTimeout(finishStage,550);
+  else setTimeout(renderChoice5,450);
+}
+const dragChoiceCases = [
+  {
+    title:"Seseorang duduk sendirian karena dijauhi teman-temannya.",
+    actions:[
+      {id:"a",text:"👋 Mengajaknya bicara dan mendengarkan ceritanya",correct:true},
+      {id:"b",text:"😂 Ikut menertawakannya",correct:false},
+      {id:"c",text:"🚶 Membiarkannya karena bukan urusan kita",correct:false},
+      {id:"d",text:"📣 Mengajak teman lain untuk mengejek",correct:false}
+    ]
+  },
+  {
+    title:"Kamu melihat dua teman mulai bertengkar karena salah paham.",
+    actions:[
+      {id:"a",text:"🗣️ Membantu mereka berbicara dengan tenang",correct:true},
+      {id:"b",text:"📱 Menyebarkan videonya ke grup",correct:false},
+      {id:"c",text:"🔥 Memancing mereka agar semakin marah",correct:false},
+      {id:"d",text:"👀 Menambah cerita yang belum tentu benar",correct:false}
+    ]
+  }
+];
+
+function renderDragChoice(){
+  const c=dragChoiceCases[dragChoiceIndex];
+  $("challenge").innerHTML=`
+    <div class="challenge-card area2-card">
+      <div class="challenge-top"><span class="pill">🌿 JALUR KEBUN ${dragChoiceIndex+1}/2</span><span class="mini-note">★ • ⏱ 14 DETIK</span></div>
+      <div class="area2-situation"><div class="area2-label">SITUASI</div><h2>${c.title}</h2></div>
+      <p class="muted area2-instruction"><b>Pilih satu tindakan.</b> Klik atau seret ke JALAN KELUAR.</p>
+      <div id="dragOptions" class="drag-options">
+        ${c.actions.map((x,i)=>`<button type="button" class="drag-card" draggable="true" data-id="${x.id}" onclick="chooseDrag('${x.id}')" ondragstart="dragStartArea2(event,'${x.id}')"><span class="drag-number">${i+1}</span><span>${x.text}</span></button>`).join("")}
+      </div>
+      <div id="dropZone" class="drop-zone" ondragover="dragOverArea2(event)" ondragleave="dragLeaveArea2(event)" ondrop="dropArea2(event)"><div class="drop-icon">🧭</div><strong>JALAN KELUAR</strong><small>Seret pilihanmu ke sini</small></div>
+      <div id="area2Feedback"></div>
+    </div>`;
+  document.querySelectorAll("#dragOptions .drag-card").forEach(el=>el.addEventListener("dragstart",e=>dragStartArea2(e,el.dataset.id)));
+  startQuestionTimer(()=>{
+    loseLife("Waktu untuk situasi ini habis.");
+    if(lives>0)setTimeout(renderDragChoice,450);
+  });
+}
+function dragStartArea2(e,id){if(e&&e.dataTransfer){e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",id)}}
+function dragOverArea2(e){e.preventDefault();if(e.dataTransfer)e.dataTransfer.dropEffect="move";const dz=$("dropZone");if(dz)dz.classList.add("over")}
+function dragLeaveArea2(e){const dz=$("dropZone");if(dz&&!dz.contains(e.relatedTarget))dz.classList.remove("over")}
+function dropArea2(e){e.preventDefault();const dz=$("dropZone");if(dz)dz.classList.remove("over");const id=e.dataTransfer?e.dataTransfer.getData("text/plain"):"";if(id)chooseDrag(id)}
+function chooseDrag(id){
+ const _a=dragChoiceCases[dragChoiceIndex].actions.find(x=>x.id===id);playAnswerSound(!!(_a&&_a.correct));
+  const c=dragChoiceCases[dragChoiceIndex],act=c.actions.find(x=>x.id===id);if(!act)return;
+  const buttons=document.querySelectorAll("#dragOptions .drag-card");
+  if(!act.correct){
+    const wrong=Array.from(buttons).find(b=>b.dataset.id===id);if(wrong)wrong.classList.add("wrong");
+    $("area2Feedback").innerHTML=`<div class="feedback">Belum tepat. Nyawa tidak berkurang. Waktu tetap berjalan—pilih tindakan yang lebih membantu.</div>`;
+    setTimeout(()=>{buttons.forEach(b=>b.disabled=false);const w=Array.from(buttons).find(b=>b.dataset.id===id);if(w)w.classList.remove("wrong")},450);
+    return;
+  }
+  clearTimer();
+  buttons.forEach(b=>b.disabled=true);
+  const right=Array.from(buttons).find(b=>b.dataset.id===id);if(right)right.classList.add("correct");
+  flowers++;updateStats();dragChoiceIndex++;
+  $("area2Feedback").innerHTML=`<div class="feedback correct-feedback">✓ Pilihan tepat!</div>`;
+  if(dragChoiceIndex>=dragChoiceCases.length)setTimeout(finishStage,550);else setTimeout(renderDragChoice,450);
+}
+
+const sequence2Cases = [
+  {
+    title:"Konflik antarkelompok siswa",
+    items:[
+      "Dengarkan kedua pihak",
+      "Tentukan penyebab konflik",
+      "Cari kesepakatan",
+      "Tentukan solusi bersama"
+    ]
+  },
+  {
+    title:"Masalah sosial di lingkungan",
+    items:[
+      "Kenali masalah",
+      "Kumpulkan informasi",
+      "Analisis penyebab dan dampak",
+      "Rancang solusi"
+    ]
+  }
+];
+
+function renderSequence2(keepTimer=false){
+  const c=sequence2Cases[sequence2Index],shuffled=[...c.items].sort(()=>Math.random()-0.5);
+  sequence2State.items=shuffled;sequencePicked=[];
+  $("challenge").innerHTML=`<div class="challenge-card"><div class="challenge-top"><span class="pill">GUA PETUNJUK ${sequence2Index+1}/2</span><span class="mini-note">★★ • ⏱ 60 DETIK</span></div><h2>${c.title}</h2><p class="muted">Klik kartu sesuai urutan yang paling masuk akal.</p><div id="sequencePool" class="sequence-pool">${shuffled.map((x,i)=>`<button type="button" class="sequence-card" onclick="pickSequence2(${i})">${x}</button>`).join("")}</div><div class="sequence-path" id="sequencePath"><div class="path-label">JALAN KELUAR</div></div><button class="primary-btn" id="checkSequenceBtn" onclick="checkSequence2()" disabled>Periksa Urutan</button><div id="sequenceFeedback"></div></div>`;
+  if(!keepTimer){ startCountdown(60,()=>{loseLife("Waktu menyusun urutan habis.");if(lives>0)setTimeout(()=>renderSequence2(false),450)}); }
+}
+function pickSequence2(i){
+  const btns=document.querySelectorAll(".sequence-card");if(!btns[i]||btns[i].disabled)return;
+  sequencePicked.push(sequence2State.items[i]);btns[i].disabled=true;
+  $("sequencePath").insertAdjacentHTML("beforeend",`<div class="sequence-picked">${sequencePicked.length}. ${sequence2State.items[i]}</div>`);
+  $("checkSequenceBtn").disabled=sequencePicked.length!==4;
+}
+function checkSequence2(){
+ const _e=sequence2Cases[sequence2Index].items;playAnswerSound(_e.every((x,i)=>x===sequencePicked[i]));
+  const expected=sequence2Cases[sequence2Index].items,ok=expected.every((x,i)=>x===sequencePicked[i]);
+  if(!ok){
+    $("sequenceFeedback").innerHTML=`<div class="feedback">Belum tepat. Nyawa tidak berkurang; waktu tetap berjalan. Susun ulang.</div>`;
+    setTimeout(()=>renderSequence2(true),450);
+    return;
+  }
+  clearTimer();flowers++;sequence2Index++;updateStats();
+  if(sequence2Index>=sequence2Cases.length){reward(1,"Gua Petunjuk selesai!");setTimeout(finishStage,650)}
+  else setTimeout(renderSequence2,450);
+}
+function renderEvent(box){
+ box.innerHTML=`<div class="event-card"><div class="npc">🦊</div><div class="challenge-top"><span class="stage-tag">🎭 EVENT SOSIAL</span><b>⏱ 14 DETIK</b></div><h3>Seekor rubah kecil terjebak di dekat jalan.</h3><p style="font-weight:800">Kamu melihat beberapa siswa lewat. Apa tindakan paling bertanggung jawab?</p><div class="event-actions"><button class="btn btn-green" onclick="eventChoice('help')">🤝 Cari bantuan dan amankan area</button><button class="btn btn-white" onclick="eventChoice('observe')">👀 Memastikan kondisi dari jarak aman</button><button class="btn btn-danger" onclick="eventChoice('ignore')">🚶 Lewat saja</button></div><div id="eventFeedback"></div></div>`;
+ startQuestionTimer(()=>{loseLife("Waktu event habis.");if(lives>0)setTimeout(()=>renderEvent($("challenge")),450)});
+}
+function eventChoice(choice){
+ playAnswerSound(choice==='help'||choice==='observe');
+ const f=$("eventFeedback");
+ if(choice==="help"){clearTimer();flowers+=2;updateStats();f.innerHTML=`<div class="feedback">🦊 Kamu meminta bantuan pihak yang tepat dan menjaga keselamatan.</div><button class="btn btn-primary" onclick="finishStage()">LANJUT →</button>`}
+ else if(choice==="observe"){clearTimer();flowers++;updateStats();f.innerHTML=`<div class="feedback">🌱 Kamu menilai keadaan dan mencari bantuan. Itu lebih aman.</div><button class="btn btn-primary" onclick="finishStage()">LANJUT →</button>`}
+ else{f.innerHTML=`<div class="feedback">Belum tepat. Nyawa tidak berkurang. Waktu tetap berjalan; pikirkan pilihan yang paling bertanggung jawab.</div>`}
+}
+function makeWordGrid(){
+ const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";let grid=Array.from({length:10},()=>Array.from({length:10},()=>letters[Math.floor(Math.random()*26)]));
+ const dirs=[[0,1],[1,0],[1,1],[0,1]];wordTargets.forEach((w,wi)=>{let r=wi%7,c=(wi*3)%5,d=dirs[wi%dirs.length];for(let j=0;j<w.length&&r+d[0]*j<10&&c+d[1]*j<10;j++)grid[r+d[0]*j][c+d[1]*j]=w[j]});
+ return grid;
+}
+let wordGrid=[];
+function renderWordSearch(box){
+ wordGrid=makeWordGrid();wordFound=new Set();wordStart=null;
+ box.innerHTML=`<div class="challenge-head"><span class="stage-tag">🔎 HUTAN KATA</span><b>⏱ 60 DETIK</b></div><p style="font-weight:800">Temukan 10 kata. Klik huruf pertama lalu huruf terakhir.</p><div class="word-grid" id="wordGrid"></div><div style="display:flex;flex-wrap:wrap;gap:7px;justify-content:center">${wordTargets.map(w=>`<span id="wt-${w}" class="choice-chip">${w}</span>`).join("")}</div><div id="wordFeedback" class="feedback" style="margin-top:12px">Ditemukan: 0 / 10</div>`;
+ const g=$("wordGrid");wordGrid.forEach((row,r)=>row.forEach((ch,c)=>{const b=document.createElement("button");b.type="button";b.className="word-cell";b.textContent=ch;b.dataset.r=r;b.dataset.c=c;b.onclick=()=>selectWordCell(b,r,c);g.appendChild(b)}));
+ startChallengeTimer(()=>{loseLife("Waktu mencari kata habis.");if(lives>0)setTimeout(()=>renderWordSearch($("challenge")),450)});
+}
+function selectWordCell(b,r,c){
+ if(!wordStart){wordStart={r,c};b.classList.add("sel");return}
+ const r2=r,c2=c;let dr=Math.sign(r2-wordStart.r),dc=Math.sign(c2-wordStart.c),chars="",rr=wordStart.r,cc=wordStart.c;
+ while(rr!==r2+dr||cc!==c2+dc){chars+=wordGrid[rr][cc];if(rr===r2&&cc===c2)break;rr+=dr;cc+=dc;if(chars.length>20)break}
+ const rev=chars.split("").reverse().join(""),found=wordTargets.find(w=>w===chars||w===rev);
+ document.querySelectorAll(".word-cell.sel").forEach(x=>x.classList.remove("sel"));
+ if(found&&!wordFound.has(found)){wordFound.add(found);document.querySelectorAll(".word-cell").forEach(x=>{const rr2=+x.dataset.r,cc2=+x.dataset.c;if((rr2===wordStart.r&&cc2===wordStart.c)||(rr2===r&&cc2===c))x.classList.add("found")});$("wt-"+found).classList.add("active");flowers++;updateStats()}
+ else if(!found){toast("Belum menemukan kata. Waktu tetap berjalan.")}
+ wordStart=null;$("wordFeedback").textContent=`Ditemukan: ${wordFound.size} / 10`;
+ if(wordFound.size>=10){clearTimer();setTimeout(finishStage,500)}
+}
+function renderSnake(box){
+  snakeQuestion=null;
+  const special={5:"🌸",10:"🍎",14:"💣",18:"🌸",22:"🍎",26:"💣",29:"🌸"};
+  window.snakeSpecial=special;
+  box.innerHTML=`<div class="challenge-card"><div class="challenge-top"><span class="pill">🎲 JEMBATAN ULAR TANGGA</span><span class="mini-note">TANPA TIMER</span></div><h2>Giliranmu menentukan langkah.</h2><p class="muted">Lempar dadu. Sebelum pion bergerak, jawab 1 pertanyaan pilihan ganda dengan benar. Salah = kehilangan 1 ❤️ dan pion tetap di tempat.</p><div class="snake-board-v4" id="snakeBoard"></div><div style="display:flex;gap:10px;justify-content:center;margin-top:15px;flex-wrap:wrap"><button class="btn btn-primary" id="rollBtn" onclick="rollDice()">🎲 LEMPAR DADU</button><div id="diceText" class="stat">Posisi ${playerPos} • Lempar dadu untuk mulai</div></div><div id="snakeQuestion"></div><div id="snakeFeedback"></div></div>`;
+  drawSnake();
+}
+let snakeQuestion=null; let snakePendingRoll=0;
+function drawSnake(){
+ const b=$("snakeBoard"); if(!b)return; b.innerHTML="";
+ for(let i=1;i<=30;i++){let s=document.createElement("div");s.className="snake-cell-v4";let mark=window.snakeSpecial?.[i]||"";if(mark==="💣")s.classList.add("special-bomb");if(mark==="🍎")s.classList.add("special-life");if(mark==="🌸")s.classList.add("special-flower");s.innerHTML=`<div>${i}</div><div>${mark}</div>`;if(playerPos===i)s.innerHTML+=`<span class="pawn-v4">🧭</span>`;b.appendChild(s)}
+}
+const snakeQuestions=[
+ {q:"Apa yang dimaksud masalah sosial?",opts:["Kondisi yang dianggap mengganggu kehidupan bersama dan membutuhkan penanganan","Semua masalah pribadi","Peristiwa alam biasa","Kegiatan yang selalu menyenangkan"],a:0},
+ {q:"Salah satu ciri masalah sosial adalah...",opts:["Berkaitan dengan kehidupan banyak orang dan nilai yang berlaku","Hanya dialami satu orang tanpa dampak sosial","Tidak memiliki penyebab","Selalu terjadi karena bencana alam"],a:0},
+ {q:"Rendahnya empati sosial dapat terlihat dari...",opts:["Tidak peduli terhadap kesulitan orang lain","Suka membantu tanpa diminta","Mau mendengarkan orang lain","Mencari solusi bersama"],a:0},
+ {q:"Ketimpangan sosial berkaitan dengan...",opts:["Perbedaan akses terhadap sumber daya dan kesempatan","Kesamaan seluruh kondisi masyarakat","Tidak adanya hubungan sosial","Perbedaan cuaca"],a:0},
+ {q:"Konflik sosial dapat terjadi ketika...",opts:["Ada perbedaan kepentingan, nilai, atau tujuan","Semua pihak selalu sepakat","Tidak ada interaksi","Semua kebutuhan terpenuhi"],a:0},
+ {q:"Sikap yang membantu meredakan konflik adalah...",opts:["Mendengarkan pihak yang terlibat dan mencari titik temu","Menyebarkan rumor","Memihak tanpa memahami masalah","Memperbesar pertentangan"],a:0},
+ {q:"Kerja sama sosial berarti...",opts:["Bekerja bersama untuk mencapai tujuan yang disepakati","Memaksa orang lain mengikuti kehendak kita","Menghindari semua interaksi","Bekerja sendiri tanpa komunikasi"],a:0},
+ {q:"Norma sosial berfungsi antara lain untuk...",opts:["Memberi pedoman perilaku dalam kehidupan bersama","Membuat semua orang memiliki pendapat sama","Menghapus semua perbedaan","Menentukan pekerjaan seseorang"],a:0},
+ {q:"Ketika melihat teman dikucilkan, tindakan yang lebih tepat adalah...",opts:["Mengajaknya berkomunikasi dan mencari cara agar ia tidak sendirian","Ikut mengucilkannya","Menyebarkan ceritanya","Membiarkannya tanpa alasan"],a:0},
+ {q:"Dalam menganalisis masalah sosial, kita sebaiknya...",opts:["Melihat sebab, dampak, pihak yang terlibat, dan konteksnya","Langsung menyalahkan satu orang","Mengandalkan rumor","Mengabaikan data"],a:0},
+ {q:"Contoh tindakan preventif terhadap konflik adalah...",opts:["Membangun komunikasi sebelum kesalahpahaman membesar","Menunggu sampai konflik menjadi besar","Menyebarkan provokasi","Menghindari semua pembicaraan"],a:0},
+ {q:"Solusi masalah sosial yang baik sebaiknya...",opts:["Mempertimbangkan kondisi pihak terdampak dan melibatkan kerja sama","Hanya menguntungkan satu pihak","Tidak perlu melihat penyebab","Dibuat tanpa informasi"],a:0}
+];
+let snakeQuestionIndex=0;
+function rollDice(){
+ if(snakeQuestion)return; const d=Math.floor(Math.random()*6)+1; snakePendingRoll=d; $("rollBtn").disabled=true; $("diceText").textContent=`🎲 Dadu menunjukkan ${d}. Jawab pertanyaan untuk bergerak.`; const q=snakeQuestions[snakeQuestionIndex % snakeQuestions.length]; snakeQuestionIndex++; snakeQuestion=q;
+ $("snakeQuestion").innerHTML=`<div class="snake-q"><b>🧠 Pertanyaan sebelum berjalan</b><p style="font-weight:900">${q.q}</p>${q.opts.map((x,i)=>`<button class="answer" onclick="answerSnake(${i},this)">${x}</button>`).join("")}</div>`;
+}
+function answerSnake(i,btn){
+ playAnswerSound(i===snakeQuestion.answer);
+ const q=snakeQuestion; document.querySelectorAll('#snakeQuestion .answer').forEach(x=>x.disabled=true);
+ if(i!==q.a){btn.classList.add('wrong');snakeQuestion=null;snakePendingRoll=0;const alive=loseLife('Jawaban salah. Pion tidak bergerak.');$("snakeFeedback").innerHTML='<div class="feedback">❌ Jawaban belum tepat. Kamu tetap di petak semula.</div>';$("rollBtn").disabled=lives<=0;return;}
+ btn.classList.add('correct'); playerPos=Math.min(30,playerPos+snakePendingRoll); snakeQuestion=null;snakePendingRoll=0;
+ // tangga dan ular
+ if([3,8,20].includes(playerPos)) playerPos={3:11,8:16,20:24}[playerPos];
+ else if([12,19,27].includes(playerPos)) playerPos={12:6,19:10,27:15}[playerPos];
+ const special=window.snakeSpecial[playerPos];
+ if(special==='💣'){lives=Math.max(0,lives-1);updateStats();toast('💣 Bom! -1 ❤️');}
+ else if(special==='🍎'){lives=Math.min(3,lives+1);apples+=1;updateStats();toast('🍎 Apel! +1 ❤️');}
+ else if(special==='🌸'){lives=Math.min(3,lives+1);flowers+=1;updateStats();toast('🌸 Bunga! +1 ❤️');}
+ drawSnake();$("snakeQuestion").innerHTML='';$("diceText").textContent=`Kamu berada di petak ${playerPos}.`;$("rollBtn").disabled=false;
+ if(lives<=0){setTimeout(recoverLife,350);return;}
+ if(playerPos>=30){reward(2,'Berhasil mencapai ujung ular tangga!');setTimeout(finishStage,700);}
+}
+
+function renderBottleThrow(box){
+ box.innerHTML=`<div class="challenge-card bowling-card"><div class="challenge-top"><span class="pill">🎳 BOWLING</span><span class="mini-note">⏱ 45 DETIK</span></div><h2>Jatuhkan 30 botol!</h2><p class="muted">Arahkan bola ke susunan botol seperti permainan bowling. Kamu boleh melempar berkali-kali sebelum waktu habis.</p><div class="bowling-lane" id="bowlingLane"><div class="lane-markings"></div><div class="pins" id="bowlingPins"></div><div class="bowling-ball" id="bowlingBall">●</div></div><div class="bowling-controls"><input id="bowlingAim" type="range" min="10" max="90" value="50" aria-label="Arah lempar bola"><button class="btn btn-primary" id="bowlBtn" onclick="throwBowlingBall()">🎳 LEMPAR BOLA</button></div><div id="bottleCount" class="feedback" style="text-align:center;font-size:20px">Botol jatuh: 0 / 30</div></div>`;
+ const pins=$("bowlingPins"); let n=0;
+ for(let r=0;r<6;r++) for(let c=0;c<6 && n<30;c++){const b=document.createElement('button');b.type='button';b.className='bowling-pin';b.textContent='🍾';b.style.left=(30+c*8+(r%2)*4)+'%';b.style.top=(5+r*10)+'%';b.dataset.pin=n++;pins.appendChild(b)}
+ startCountdown(45,()=>{loseLife('Waktu bowling habis.');if(lives>0)setTimeout(()=>renderBottleThrow($("challenge")),450)});
+}
+function throwBowlingBall(){
+ const ball=$("bowlingBall"); if(!ball||ball.dataset.rolling==='1')return; ball.dataset.rolling='1'; $("bowlBtn").disabled=true;
+ const aim=+$("bowlingAim").value; ball.style.left=aim+'%'; ball.classList.remove('roll'); void ball.offsetWidth; ball.classList.add('roll');
+ setTimeout(()=>{const pins=[...document.querySelectorAll('.bowling-pin:not(.knocked)')];const dist=Math.abs(aim-50);const hit=Math.max(3,Math.min(7,Math.round(7-dist/10)));const chosen=pins.slice(0,hit);chosen.forEach((pin,i)=>setTimeout(()=>{pin.classList.add('knocked');pin.disabled=true},i*70));setTimeout(()=>{const fallen=30-document.querySelectorAll('.bowling-pin:not(.knocked)').length;$("bottleCount").textContent=`Botol jatuh: ${fallen} / 30`;ball.classList.remove('roll');ball.style.left='50%';ball.dataset.rolling='0';$("bowlBtn").disabled=false;if(fallen>=30){clearTimer();reward(1,'Bowling selesai! +1 bunga');setTimeout(finishStage,700)}},Math.max(550,chosen.length*70+120));},650);
+}
+
+const monsterQuestions=[
+ {q:"Monster: “Masalah sosial pasti hanya kesalahan individu.” Tanggapan yang tepat?",a:0,opts:["Masalah sosial juga dipengaruhi struktur, kondisi, dan hubungan sosial.","Benar, semua masalah selalu salah individu."]},
+ {q:"Rendahnya empati sosial dapat menyebabkan...",a:0,opts:["Sikap apatis dan hubungan sosial yang renggang.","Semua orang otomatis semakin peduli."]},
+ {q:"Dalam memahami masalah sosial, tindakan yang lebih sosiologis adalah...",a:0,opts:["Melihat sebab, dampak, dan konteks sosialnya.","Langsung mencari satu orang untuk disalahkan."]},
+ {q:"Solusi masalah sosial sebaiknya...",a:0,opts:["Mempertimbangkan kebutuhan pihak yang terdampak dan kerja sama.","Hanya menguntungkan satu pihak."]}
+];
+let monsterQuestionIndex=0;
+
+function renderMonster(box){
+ const q=monsterQuestions[monsterQuestionIndex];
+ box.innerHTML=`<div class="challenge-head"><span class="stage-tag">👾 MONSTER BATTLE</span><b>Ronde ${monsterQuestionIndex+1}/4 • ⏱ 14 DETIK</b></div><div class="battle"><div class="fighter"><div style="font-size:75px">🧭</div><h3>${player.name}</h3><p>🌸 Bunga: ${flowers}</p></div><div class="fighter"><div style="font-size:75px">👾</div><h3>Monster Stereotip</h3><div class="hp"><i style="width:${100-monsterQuestionIndex*25}%"></i></div><p>HP ${100-monsterQuestionIndex*25}/100</p></div></div><div class="question">${q.q}</div><div class="choices">${q.opts.map((x,i)=>`<button class="answer" onclick="monsterAttack(${i===q.a},this)">${x}</button>`).join("")}</div><div id="monsterFeedback"></div>`;
+ startQuestionTimer(()=>{loseLife("Waktu ronde monster habis.");if(lives>0)setTimeout(()=>renderMonster($("challenge")),450)});
+}
+function monsterAttack(ok,button){
+ playAnswerSound(!!ok);
+ if(ok){
+   clearTimer();button.classList.add("correct");flowers++;monsterQuestionIndex++;updateStats();
+   $("monsterFeedback").innerHTML=`<div class="feedback correct-feedback">💥 Serangan tepat!</div>`;
+   if(monsterQuestionIndex>=monsterQuestions.length){setTimeout(()=>{reward(2,"Monster dikalahkan!");finishStage()},550)}
+   else setTimeout(()=>renderMonster($("challenge")),450);
+ }else{
+   button.classList.add("wrong");
+   $("monsterFeedback").innerHTML=`<div class="feedback">Belum tepat. Nyawa tidak berkurang. Waktu tetap berjalan.</div>`;
+   setTimeout(()=>button.classList.remove("wrong"),400);
+ }
+}
+function renderTimed(box){
+ timeLeft=14;updateStats();
+ box.innerHTML=`<div class="challenge-head"><span class="stage-tag">⏳ JEMBATAN WAKTU</span><b>⏱ 14 DETIK</b></div><div class="question">Pilih DUA dampak yang paling mungkin muncul ketika empati sosial melemah.</div><div class="choices">${["Meningkatnya sikap apatis","Hubungan sosial makin renggang","Semua konflik otomatis hilang","Kepedulian masyarakat pasti meningkat"].map((x,i)=>`<label class="answer"><input type="checkbox" name="timed" value="${i}"> ${x}</label>`).join("")}</div><button class="btn btn-primary" style="margin-top:12px" onclick="checkTimed()">⚡ KUNCI JAWABAN</button><div id="timedFeedback"></div>`;
+ startQuestionTimer(()=>{loseLife("Waktu jembatan habis.");if(lives>0)setTimeout(()=>renderTimed($("challenge")),450)});
+}
+function checkTimed(){
+ const vals=[...document.querySelectorAll('input[name="timed"]:checked')].map(x=>+x.value).sort();
+ playAnswerSound(vals.join(",")==="0,1");
+ if(vals.join(",")==="0,1"){clearTimer();reward(2,"Tepat!");setTimeout(finishStage,500)}
+ else{$("timedFeedback").innerHTML=`<div class="feedback">Belum tepat. Nyawa tidak berkurang. Waktu tetap berjalan.</div>`;}
+}
+function renderMemory(box){
+ const icons=["🤝","🤝","⚖️","⚖️","🔥","🔥","🏫","🏫","❤️","❤️","🌱","🌱"];
+ icons.sort(()=>Math.random()-.5);memoryOpen=[];memoryMatched=new Set();
+ box.innerHTML=`<div class="challenge-head"><span class="stage-tag">🗝️ RUANG PUZZLE</span><b>⏱ 29 DETIK</b></div><p style="font-weight:800">Temukan semua pasangan simbol.</p><div class="memory-grid" id="memoryGrid"></div><div id="memoryFeedback" class="feedback">Pasangan: 0 / 6</div>`;
+ const g=$("memoryGrid");icons.forEach((ic,i)=>{const b=document.createElement("button");b.type="button";b.className="memory-card";b.dataset.i=i;b.dataset.v=ic;b.textContent="❔";b.onclick=()=>flipMemory(b);g.appendChild(b)});
+ startCountdown(29,()=>{loseLife("Waktu puzzle habis.");if(lives>0)setTimeout(()=>renderMemory($("challenge")),450)});
+}
+function flipMemory(b){
+ if(b.classList.contains("open")||memoryOpen.length>=2||memoryMatched.has(+b.dataset.i))return;
+ b.classList.add("open");b.textContent=b.dataset.v;memoryOpen.push(b);
+ if(memoryOpen.length===2){
+   const [a,c]=memoryOpen;
+   setTimeout(()=>{
+     if(a.dataset.v===c.dataset.v){
+       playAnswerSound(true);
+       memoryMatched.add(+a.dataset.i);memoryMatched.add(+c.dataset.i);flowers++;updateStats();
+       $("memoryFeedback").textContent=`Pasangan: ${memoryMatched.size/2} / 6`;
+       if(memoryMatched.size===12){clearTimer();setTimeout(finishStage,500)}
+      }else{
+       playAnswerSound(false);
+       a.classList.remove("open");c.classList.remove("open");a.textContent=c.textContent="❔";
+       $("memoryFeedback").textContent=`Belum cocok. Nyawa tidak berkurang; waktu tetap berjalan.`;
+     }
+     memoryOpen=[];
+   },500);
+ }
+}
+function renderFinal(box){
+ const q=[
+  ["Sebab","Sebuah masalah sosial terus membesar karena warga mulai kehilangan kepedulian dan memilih tidak terlibat. Penjelasan yang paling tepat adalah..."],
+  ["Dampak","Jika sikap apatis dan lemahnya kepedulian berlangsung lama, dampak sosial yang paling masuk akal adalah..."],
+  ["Solusi","Tindakan yang paling sesuai untuk menangani masalah tersebut secara sosial adalah..."]
+ ];
+ box.innerHTML=`<div class="challenge-head"><span class="stage-tag">🚪 FINAL GATE</span><b>3 KUNCI • 14 DETIK/KUNCI</b></div><p style="font-weight:800">Ini tantangan terakhir. Baca kasusnya baik-baik dan pilih jawaban yang paling tepat.</p><div id="finalStep"></div><div id="finalFeedback"></div>`;
+ finalStepIndex=0;renderFinalStep(q);
+}
+let finalStepIndex=0;
+function renderFinalStep(q){
+ const arr=finalChoices(finalStepIndex);
+ $("finalStep").innerHTML=`<div class="section-card final-question"><b>${q[finalStepIndex][0]}</b><p style="font:700 20px Fredoka">${q[finalStepIndex][1]}</p>${arr}<button class="btn btn-primary" style="margin-top:12px" onclick="checkFinalStep()">KUNCI ${finalStepIndex+1}/3</button></div>`;
+ startQuestionTimer(()=>{loseLife("Waktu kunci final habis.");if(lives>0)setTimeout(()=>renderFinal($("challenge")),450)});
+}
+function finalChoices(i){
+ const bank=[
+  [
+   ["Masalah sosial muncul karena satu orang selalu menjadi penyebab utama.",false],
+   ["Rendahnya kepedulian membuat persoalan bersama kurang mendapat respons dan penanganan.",true],
+   ["Masyarakat yang kompak tidak pernah mengalami masalah sosial.",false],
+   ["Masalah sosial hanya terjadi ketika ada aturan tertulis yang dilanggar.",false],
+   ["Konflik sosial selalu menjadi satu-satunya penyebab masalah sosial.",false]
+  ],
+  [
+   ["Hubungan sosial dapat melemah karena orang semakin enggan bekerja sama dan saling membantu.",true],
+   ["Semua anggota masyarakat otomatis menjadi lebih mandiri dan tidak membutuhkan orang lain.",false],
+   ["Masalah sosial akan hilang sendiri setelah masyarakat terbiasa menghadapinya.",false],
+   ["Setiap konflik pasti berakhir dengan hubungan sosial yang lebih kuat.",false],
+   ["Dampaknya hanya dirasakan oleh orang yang pertama kali mengalami masalah.",false]
+  ],
+  [
+   ["Menunggu sampai masalah membesar agar penyelesaiannya lebih mudah terlihat.",false],
+   ["Menentukan satu orang untuk disalahkan supaya masyarakat tidak perlu terlibat.",false],
+   ["Menghindari pembicaraan tentang masalah agar konflik tidak semakin terlihat.",false],
+   ["Membangun kepedulian, membuka komunikasi, dan melakukan kerja sama untuk mencari solusi.",true],
+   ["Menyelesaikan masalah hanya melalui hukuman tanpa melihat kondisi sosial yang melatarbelakanginya.",false]
+  ]
+ ];
+ let opts=bank[i].map(x=>({text:x[0],correct:x[1]}));
+ for(let k=opts.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[opts[k],opts[j]]=[opts[j],opts[k]]}
+ let correct=opts.findIndex(x=>x.correct);
+ if(correct===0){[opts[0],opts[1]]=[opts[1],opts[0]]}
+ return opts.map((x,j)=>`<label class="answer"><input type="radio" name="fq" value="${x.correct?'1':'0'}"> ${x.text}</label>`).join("");
+}
+function checkFinalStep(){
+ const e=document.querySelector('input[name="fq"]:checked');
+ const correct=!!e && e.value==="1";
+ if(e)playAnswerSound(correct);
+ if(!e){$("finalFeedback").innerHTML=`<div class="feedback">Pilih salah satu jawaban dulu.</div>`;return}
+ if(!correct){$("finalFeedback").innerHTML=`<div class="feedback">Belum tepat. Nyawa tidak berkurang; waktu tetap berjalan.</div>`;return}
+ clearTimer();finalStepIndex++;
+ if(finalStepIndex>=3){reward(5,"Final Gate terbuka!");setTimeout(finishStage,700)}
+ else{
+   const q=[
+    ["Sebab","Sebuah masalah sosial terus membesar karena warga mulai kehilangan kepedulian dan memilih tidak terlibat. Penjelasan yang paling tepat adalah..."],
+    ["Dampak","Jika sikap apatis dan lemahnya kepedulian berlangsung lama, dampak sosial yang paling masuk akal adalah..."],
+    ["Solusi","Tindakan yang paling sesuai untuk menangani masalah tersebut secara sosial adalah..."]
+   ];
+   setTimeout(()=>renderFinalStep(q),400);
+ }
+}
+function submitReflection(){
+ const values=[$("ref1").value.trim(),$("ref2").value.trim(),$("ref3").value.trim()];
+ if(values.some(v=>!v)){toast('📝 Lengkapi refleksi terlebih dahulu.');return;}
+ copyReflection(); showBouquet();
+}
+function showBouquet(){
+ const wrap=$("bouquetReveal");
+ wrap.classList.remove('hidden');
+ startVictoryMusic();
+ $("finishTitle").textContent=`🎉 ${player.name}, KAMU MENANG!!`;
+ $("finishText").textContent=`Kamu berhasil menaklukkan seluruh Social Maze. Ini hadiah kemenanganmu!`;
+ $("bouquet").innerHTML=`<div class="v6-ending-scene">
+   <div class="v6-confetti" id="v6Confetti"></div>
+   <img class="v6-winner-art" alt="Karakter pemenang Social Maze" src="images/winner-character.webp">
+ </div>`;
+ const confetti=$("v6Confetti");
+ if(confetti){
+   confetti.innerHTML="";
+   const shapes=["rect","rect","circle","star","rect","circle"];
+   for(let i=0;i<72;i++){
+     const piece=document.createElement("span");
+     const shape=shapes[i%shapes.length];
+     piece.className="v6-confetti-piece"+(shape==="circle"?" circle":"")+(shape==="star"?" star":"");
+     if(shape!=="star"){
+       const colors=["#ef476f","#ffd166","#06d6a0","#118ab2","#9b5de5","#ff8fab","#f97316"];
+       piece.style.background=colors[i%colors.length];
+     }
+     piece.style.left=(2+Math.random()*96)+"%";
+     piece.style.setProperty("--fall",(2.8+Math.random()*2.2).toFixed(2)+"s");
+     piece.style.setProperty("--delay",(-Math.random()*4.5).toFixed(2)+"s");
+     piece.style.setProperty("--drift",((-80+Math.random()*160).toFixed(0))+"px");
+     piece.style.setProperty("--spin",((360+Math.random()*900).toFixed(0))+"deg");
+     piece.style.transform=`rotate(${Math.random()*360}deg)`;
+     confetti.appendChild(piece);
+   }
+ }
+ $("bouquetText").textContent="Hadiahmu: buket bunga untuk sang penjelajah yang berhasil keluar dari Social Maze! Selamat!";
+}
+function showFinish(){
+ stopAllGameMusic();
+ $("game").classList.add("hidden");$("finish").classList.remove("hidden");
+ $("finishTitle").textContent=`🚪 Gerbang terakhir terbuka!`;
+ $("finishText").textContent=`Kamu berhasil melewati 10 area Social Maze. Sebelum menerima hadiah kemenanganmu, selesaikan refleksi singkat berikut.`;
+ $("bouquetReveal").classList.add("hidden");
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function copyReflection(){
+ const text=`LEMBAR REFLEKSI SOCIAL MAZE\nPemain: ${player.name}\nKelas: ${player.cls}\n\n1. Dampak sosial: ${$("ref1").value||"-"}\n2. Hubungan sebab-akibat: ${$("ref2").value||"-"}\n3. Tindakan/solusi: ${$("ref3").value||"-"}`;
+ navigator.clipboard?.writeText(text).then(()=>toast("📋 Refleksi berhasil disalin!")).catch(()=>alert(text));
+}
+function restartAll(){stopAllGameMusic();localStorage.removeItem("socialMazeAdventureUnlockedV16");localStorage.removeItem("socialMazeAdventureUnlockedV16_OLD");localStorage.removeItem("socialMazeAdventureUnlocked");localStorage.removeItem("socialMazeAdventureUnlockedV16");unlocked=1;lives=3;flowers=0;apples=0;current=0;$("finish").classList.add("hidden");$("landing").classList.remove("hidden");}
+</script>
+</body>
+</html>
